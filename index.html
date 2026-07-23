@@ -139,6 +139,18 @@
     details.more summary{cursor:pointer;color:rgba(10,15,25,.85);font-weight:800;padding:8px 10px;border-radius:12px;background:rgba(37,99,235,.08);border:1px solid var(--line);display:inline-block;}
     details.more .grid{margin-top:10px}
     details.more[open]{padding-bottom:14px}
+    .appFinder{
+      display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+      margin-top:20px;padding:14px;border:1px solid var(--line);
+      border-radius:18px;background:var(--card);
+    }
+    .appFinder input{
+      width:100%;min-height:48px;padding:0 16px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;color:var(--text);font:inherit;
+    }
+    .appFinder input:focus{outline:3px solid rgba(23,107,77,.16);border-color:var(--accent)}
+    .appCount{color:var(--accent);font-weight:800;white-space:nowrap;padding:0 8px}
+    .noResults{display:none;margin-top:16px;padding:18px;text-align:center;color:var(--muted)}
 
     .noteCards .card{grid-column: span 6}
     .recommend{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
@@ -337,6 +349,8 @@
       #about .contact{grid-template-columns:1fr!important}
       #about img{width:112px!important;height:112px!important;margin:0 auto}
       .promoCard{max-width:none}
+      .appFinder{grid-template-columns:1fr}
+      .appCount{text-align:center}
     }
 
     @media (max-width:520px){
@@ -460,8 +474,13 @@
     <section class="section" id="apps">
       <div class="secHead">
         <h2 class="secTitle"><small>APPS</small>カテゴリ別アプリ</h2>
-        <p class="secDesc">各カテゴリは「まず使ってほしい分だけ」を上に出して、残りは“もっと見る”にまとめています。</p>
+        <p class="secDesc">目的に合う言葉を入れると、使えるアプリだけに絞り込めます。</p>
       </div>
+      <div class="appFinder" role="search">
+        <input id="appSearch" type="search" placeholder="例：投資、住宅、固定費、副業、子ども" aria-label="アプリを検索">
+        <span class="appCount" id="appCount">アプリを検索</span>
+      </div>
+      <div class="noResults" id="noResults">該当するアプリがありません。別の言葉で試してください。</div>
 
       <div class="section">
         <h3 style="margin:14px 0 0;"><small style="display:block;letter-spacing:.16em;color:var(--muted);font-size:12px;">HOUSEHOLD</small>家計</h3>
@@ -992,6 +1011,30 @@
 
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
+    const search = document.getElementById('appSearch');
+    const appSection = document.getElementById('apps');
+    const cards = [...appSection.querySelectorAll('article.card')];
+    const count = document.getElementById('appCount');
+    const noResults = document.getElementById('noResults');
+    const normalize = value => value.toLowerCase().replace(/\s+/g, '');
+    const filterApps = () => {
+      const query = normalize(search.value);
+      let visible = 0;
+      cards.forEach(card => {
+        const match = !query || normalize(card.textContent).includes(query);
+        card.hidden = !match;
+        if (match) visible++;
+      });
+      appSection.querySelectorAll('details.more').forEach(group => {
+        const hasMatch = [...group.querySelectorAll('article.card')].some(card => !card.hidden);
+        group.hidden = !hasMatch;
+        group.open = Boolean(query && hasMatch);
+      });
+      count.textContent = query ? `${visible}件見つかりました` : `${cards.length}本の無料アプリ`;
+      noResults.style.display = visible ? 'none' : 'block';
+    };
+    search.addEventListener('input', filterApps);
+    filterApps();
   </script>
 </body>
 </html>
