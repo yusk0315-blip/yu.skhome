@@ -146,19 +146,6 @@
 
     footer{margin-top:18px;color:rgba(10,15,25,.55);font-size:12px}
 
-    @media (max-width: 900px){
-      #pickup .card{grid-column: span 12 !important;}
-      #about .contact{grid-template-columns: 1fr !important;}
-      #about img{width:120px !important;height:120px !important;margin:0 auto;}
-    }
-
-      .hero{grid-template-columns:1fr}
-      .heroRight{min-height:220px}
-      .feat{grid-column: span 12}
-      .card{grid-column: span 12}
-      .navLinks{display:none}
-    }
-  
     /* Promo blocks (affiliate) */
     .promoGrid{
       display:flex;
@@ -208,6 +195,164 @@
       background:rgba(37,99,235,.08);
       color:rgba(37,99,235,.92);
       white-space:nowrap;
+    }
+
+    /* Editorial redesign */
+    :root{
+      --bg:#f5f3ed;
+      --bg2:#eeebe3;
+      --card:#fffefa;
+      --text:#17211d;
+      --muted:#68726c;
+      --line:rgba(23,33,29,.13);
+      --accent:#176b4d;
+      --accent2:#d6923b;
+      --shadow:0 18px 50px rgba(23,33,29,.09);
+      --radius:24px;
+      --radius2:18px;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      background:
+        radial-gradient(circle at 8% 0%,rgba(214,146,59,.12),transparent 28rem),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      letter-spacing:.01em;
+    }
+    .wrap{max-width:1160px;padding:22px 24px 90px}
+    .nav{
+      top:14px;
+      padding:12px 18px;
+      border-radius:16px;
+      background:rgba(255,254,250,.91);
+      box-shadow:0 8px 28px rgba(23,33,29,.07);
+    }
+    .logo{
+      position:relative;
+      width:38px;height:38px;border-radius:50%;
+      background:var(--accent);
+      box-shadow:inset 0 0 0 9px rgba(255,255,255,.88);
+    }
+    .logo::after{
+      content:"";
+      position:absolute;right:-2px;top:2px;
+      width:11px;height:11px;border-radius:50%;
+      background:var(--accent2);
+    }
+    .brand b{font-family:Georgia,"Yu Mincho",serif;font-size:18px}
+    .navLinks{gap:3px}
+    .navLinks a{
+      padding:8px 10px;border:0;background:transparent;
+      color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;
+    }
+    .navLinks a:hover{color:var(--accent);background:rgba(23,107,77,.07)}
+    .hero{
+      margin-top:24px;
+      grid-template-columns:1.08fr .92fr;
+      min-height:430px;
+      border-radius:30px;
+      background:var(--card);
+    }
+    .heroLeft{
+      padding:58px 54px;
+      display:flex;flex-direction:column;justify-content:center;
+    }
+    .kicker{color:var(--accent);font-weight:800;letter-spacing:.2em}
+    h1{
+      margin:16px 0 18px;
+      font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;
+      font-size:clamp(38px,4.3vw,58px);
+      line-height:1.25;
+      letter-spacing:-.035em;
+    }
+    .sub{font-size:16px;line-height:2}
+    .ctaRow{margin-top:26px}
+    .btnPrimary,.btnGhost,.btn{
+      min-height:44px;
+      border-radius:999px;
+      padding:11px 17px;
+      transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+    }
+    .btnPrimary{
+      background:var(--accent);
+      box-shadow:0 8px 20px rgba(23,107,77,.2);
+    }
+    .btnPrimary:hover,.btnGhost:hover,.btn:hover{transform:translateY(-2px)}
+    .btnGhost,.btn{background:#fff;border-color:var(--line)}
+    .heroRight{
+      min-height:430px;
+      background:
+        linear-gradient(120deg,rgba(23,33,29,.03),rgba(23,33,29,.2)),
+        url("hero.jpg") center/cover no-repeat;
+    }
+    .section{margin-top:58px}
+    .secHead{padding-bottom:14px;border-bottom:1px solid var(--line)}
+    .secTitle{
+      font-family:Georgia,"Yu Mincho",serif;
+      font-size:27px;line-height:1.3;
+    }
+    .secTitle small{color:var(--accent);font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:800}
+    .secDesc{max-width:560px;font-size:14px}
+    .features,.grid{gap:18px;margin-top:22px}
+    .feat,.card,.contact,.recommend{
+      border-color:rgba(23,33,29,.1);
+      background:var(--card);
+      box-shadow:0 10px 30px rgba(23,33,29,.055);
+    }
+    .feat{padding:22px;border-radius:18px}
+    .feat b{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:var(--accent)}
+    .card{
+      padding:22px;border-radius:20px;
+      transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+    }
+    .card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(23,33,29,.09);border-color:rgba(23,107,77,.24)}
+    .card h3{font-family:Georgia,"Yu Mincho",serif;font-size:18px;line-height:1.55}
+    .card p{line-height:1.9}
+    .pill,.promoBadge{
+      border:0;background:rgba(23,107,77,.09);color:var(--accent);font-weight:700;
+    }
+    #pickup .card>img{aspect-ratio:16/10;object-fit:cover;border:0!important}
+    #note{
+      margin-left:-24px;margin-right:-24px;padding:48px 24px;
+      background:#e5eee8;border-radius:28px;
+    }
+    #note .secHead{border-color:rgba(23,107,77,.2)}
+    #note .card{background:#fff}
+    .more{border-color:rgba(23,107,77,.25);background:rgba(255,254,250,.64)}
+    details.more summary{background:rgba(23,107,77,.08);color:var(--accent);border:0}
+    .promoCard{background:var(--card);border-radius:18px;box-shadow:none}
+    footer{margin-top:42px;padding-top:20px;border-top:1px solid var(--line)}
+
+    @media (max-width:900px){
+      .wrap{padding:14px 14px 64px}
+      .nav{top:8px;border-radius:14px;padding:10px 12px}
+      .navLinks{display:none}
+      .hero{grid-template-columns:1fr;min-height:0;border-radius:22px}
+      .heroLeft{padding:38px 26px}
+      .heroRight{min-height:260px;order:-1}
+      h1{font-size:clamp(32px,9.5vw,44px)}
+      .feat,.card,#pickup .card{grid-column:span 12!important}
+      .secHead{align-items:flex-start;flex-direction:column}
+      .section{margin-top:44px}
+      #note{margin-left:0;margin-right:0;padding:32px 16px}
+      #about .contact{grid-template-columns:1fr!important}
+      #about img{width:112px!important;height:112px!important;margin:0 auto}
+      .promoCard{max-width:none}
+    }
+
+    @media (max-width:520px){
+      .brand>div:last-child>div{font-size:10px!important}
+      .heroLeft{padding:30px 20px}
+      .heroRight{min-height:220px}
+      .sub br{display:none}
+      .ctaRow{display:grid}
+      .btnPrimary,.btnGhost{justify-content:center}
+      .secTitle{font-size:24px}
+      .card{padding:18px}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *{transition:none!important}
     }
 
   </style>
