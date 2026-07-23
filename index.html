@@ -433,6 +433,27 @@
     #apps{scroll-margin-top:90px}
     #apps>.section{background:rgba(255,254,250,.55);border-radius:24px;padding:22px;margin-top:20px}
     footer{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px}
+    @media (max-width:900px){
+      .hero{min-height:620px;border-radius:22px}
+      .hero::after{background:linear-gradient(180deg,rgba(9,28,22,.22),rgba(9,28,22,.94) 58%)}
+      .heroLeft{width:100%;min-height:620px;justify-content:flex-end;padding:42px 28px}
+      .heroRight{min-height:0;order:initial}
+      .photoStory{grid-template-columns:1fr}
+      .photoStory.reverse .storyPhoto{order:initial}
+      .storyPhoto{min-height:300px}
+      .storyBody{padding:38px 28px}
+      .businessGrid{grid-template-columns:1fr}
+      .businessCard{min-height:330px}
+    }
+    @media (max-width:520px){
+      .hero{min-height:650px}
+      .heroLeft{min-height:650px;padding:34px 20px}
+      .heroStats{gap:20px}
+      .heroStat strong{font-size:22px}
+      .storyPhoto{min-height:230px}
+      .storyBody{padding:32px 22px}
+      .businessCard{min-height:290px}
+    }
 
   </style>
 </head>
