@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#176b4d">
+  <meta name="description" content="現在資産と積立額から、1億円への到達年齢と必要な積立額を見える化する無料シミュレーター。">
+  <title>1億円ロードマップ｜無料シミュレーター</title>
+  <style>
+    :root{--bg:#f5f3ed;--paper:#fffefa;--ink:#17211d;--muted:#68726c;--green:#176b4d;--gold:#d6923b;--line:rgba(23,33,29,.13);--shadow:0 18px 50px rgba(23,33,29,.09)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif;background:radial-gradient(circle at 8% 0%,rgba(214,146,59,.13),transparent 28rem),linear-gradient(180deg,var(--bg),#ebe8df);min-height:100vh}
+    button,input{font:inherit}.wrap{width:min(100% - 28px,980px);margin:auto;padding:20px 0 80px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+    .home{color:var(--green);text-decoration:none;font-weight:800;font-size:13px}
+    .count{padding:7px 11px;border-radius:999px;background:#e7f0eb;color:var(--green);font-size:12px;font-weight:800}
+    .hero{padding:clamp(26px,6vw,58px);border:1px solid var(--line);border-radius:30px;background:var(--paper);box-shadow:var(--shadow);overflow:hidden;position:relative}
+    .hero:after{content:"1億";position:absolute;right:-12px;bottom:-38px;color:rgba(23,107,77,.055);font:900 clamp(110px,24vw,220px)/1 Georgia,serif}
+    .eyebrow{color:var(--green);font-size:12px;font-weight:900;letter-spacing:.18em}
+    h1{max-width:680px;margin:14px 0 12px;font:700 clamp(32px,6vw,58px)/1.28 Georgia,"Yu Mincho",serif;letter-spacing:-.04em}
+    .lead{position:relative;z-index:1;max-width:650px;margin:0;color:var(--muted);line-height:1.9}
+    .layout{display:grid;grid-template-columns:.92fr 1.08fr;gap:18px;margin-top:18px}
+    .card{border:1px solid var(--line);border-radius:22px;background:var(--paper);box-shadow:0 10px 30px rgba(23,33,29,.055);padding:22px}
+    h2{margin:0 0 18px;font:700 21px/1.5 Georgia,"Yu Mincho",serif}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field.full{grid-column:1/-1}
+    label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px;font-weight:700}
+    .input{position:relative}.input input{width:100%;min-height:48px;padding:10px 42px 10px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-size:16px}
+    .input span{position:absolute;right:13px;top:14px;color:var(--muted);font-size:13px}.input input:focus{outline:3px solid rgba(23,107,77,.18);border-color:var(--green)}
+    .run{width:100%;min-height:50px;margin-top:18px;border:0;border-radius:999px;background:var(--green);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(23,107,77,.22)}
+    .run:hover{filter:brightness(1.06)}.resultHead{display:flex;justify-content:space-between;gap:12px;align-items:start}
+    .status{padding:5px 9px;border-radius:999px;background:#fff4e5;color:#9a5b16;font-size:11px;font-weight:900}
+    .big{margin:8px 0 4px;color:var(--green);font:800 clamp(32px,6vw,52px)/1.1 Georgia,serif}.sub{color:var(--muted);font-size:13px;line-height:1.7}
+    .progress{height:12px;margin:18px 0 8px;border-radius:999px;background:#e7e5dd;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),#58a07e);transition:width .5s ease}
+    .progressText{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}.kpi{padding:13px;border-radius:15px;background:#f2f5f1;border:1px solid var(--line)}
+    .kpi small{display:block;color:var(--muted);line-height:1.45}.kpi b{display:block;margin-top:6px;font-size:17px}
+    .advice{margin-top:16px;padding:16px;border-left:4px solid var(--gold);border-radius:10px;background:#fff8ee;line-height:1.8;font-size:14px}
+    .scenarios{margin-top:18px}.scenario{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:13px}.scenario b:last-child{color:var(--green)}
+    canvas{width:100%;height:210px;margin-top:18px;border-radius:14px;background:#fff}
+    .fine{margin:16px 2px 0;color:var(--muted);font-size:11px;line-height:1.7}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.hero{border-radius:24px}.kpis{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="home" href="../../#apps">← 無料アプリ一覧へ</a><span class="count">APP 028 / 100</span></div>
+    <section class="hero">
+      <div class="eyebrow">100 MILLION YEN ROADMAP</div>
+      <h1>1億円までの距離を、今日の数字にする。</h1>
+      <p class="lead">「いつ届く？」だけでなく、5年早めるなら毎月いくら必要かまで逆算。目標を、続けられる計画へ変えます。</p>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2>あなたの現在地</h2>
+        <div class="fields">
+          <div class="field full"><label for="assets">現在の運用資産</label><div class="input"><input id="assets" type="number" min="0" step="10000" value="3000000"><span>円</span></div></div>
+          <div class="field"><label for="monthly">毎月の積立</label><div class="input"><input id="monthly" type="number" min="0" step="1000" value="50000"><span>円</span></div></div>
+          <div class="field"><label for="bonus">年間ボーナス投資</label><div class="input"><input id="bonus" type="number" min="0" step="10000" value="600000"><span>円</span></div></div>
+          <div class="field"><label for="age">現在の年齢</label><div class="input"><input id="age" type="number" min="18" max="90" step="1" value="33"><span>歳</span></div></div>
+          <div class="field"><label for="rate">想定年利</label><div class="input"><input id="rate" type="number" min="0" max="20" step=".1" value="5"><span>%</span></div></div>
+          <div class="field full"><label for="target">目標金額</label><div class="input"><input id="target" type="number" min="1000000" step="1000000" value="100000000"><span>円</span></div></div>
+        </div>
+        <button class="run" id="run">ロードマップを作る</button>
+        <p class="fine">入力内容はこの端末だけに自動保存されます。税金・手数料・相場変動は簡略化した概算です。</p>
+      </section>
+
+      <section class="card" aria-live="polite">
+        <div class="resultHead"><div><div class="sub">目標到達の目安</div><div class="big" id="arrival">—</div><div class="sub" id="arrivalSub">数字を入力して計算してください</div></div><span class="status" id="status">計算前</span></div>
+        <div class="progress"><div class="bar" id="bar"></div></div><div class="progressText"><span>現在</span><span id="progressLabel">0%</span><span>目標</span></div>
+        <div class="kpis">
+          <div class="kpi"><small>到達まで</small><b id="yearsLeft">—</b></div>
+          <div class="kpi"><small>5年早める積立</small><b id="faster">—</b></div>
+          <div class="kpi"><small>到達時の元本</small><b id="principal">—</b></div>
+        </div>
+        <div class="advice" id="advice">まずは現在の数字で、無理のない道のりを確認しましょう。</div>
+        <canvas id="chart" width="620" height="210" aria-label="資産推移グラフ"></canvas>
+        <div class="scenarios" id="scenarios"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const ids=["assets","monthly","bonus","age","rate","target"], el=id=>document.getElementById(id);
+    const yen=n=>Math.round(n).toLocaleString("ja-JP")+"円";
+    const shortYen=n=>n>=1e8?(n/1e8).toFixed(2).replace(/\.?0+$/,"")+"億円":n>=1e4?Math.round(n/1e4).toLocaleString("ja-JP")+"万円":yen(n);
+    function valueAt(start,monthly,bonus,rate,months){let v=start,r=rate/100/12;for(let i=1;i<=months;i++){v=v*(1+r)+monthly;if(i%12===0)v+=bonus}return v}
+    function reachMonths(start,monthly,bonus,rate,target){if(start>=target)return 0;let v=start,r=rate/100/12;for(let m=1;m<=1200;m++){v=v*(1+r)+monthly;if(m%12===0)v+=bonus;if(v>=target)return m}return null}
+    function neededMonthly(start,bonus,rate,target,months){let lo=0,hi=10000000;for(let i=0;i<60;i++){let mid=(lo+hi)/2;if(valueAt(start,mid,bonus,rate,months)>=target)hi=mid;else lo=mid}return hi}
+    function draw(start,monthly,bonus,rate,target,months){const c=el("chart"),ctx=c.getContext("2d"),dpr=devicePixelRatio||1,w=c.clientWidth||620,h=210;c.width=w*dpr;c.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);const points=[],maxM=Math.min(months??600,600);for(let m=0;m<=maxM;m+=12)points.push(valueAt(start,monthly,bonus,rate,m));if(maxM%12)points.push(valueAt(start,monthly,bonus,rate,maxM));const max=Math.max(target,...points)*1.05,pad=24;ctx.strokeStyle="#e4e7e2";ctx.lineWidth=1;for(let i=0;i<4;i++){let y=pad+(h-pad*2)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}ctx.strokeStyle="#176b4d";ctx.lineWidth=3;ctx.beginPath();points.forEach((p,i)=>{let x=pad+(w-pad*2)*i/(points.length-1||1),y=h-pad-(h-pad*2)*p/max;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle="#68726c";ctx.font="11px system-ui";ctx.fillText("現在",pad,h-6);ctx.textAlign="right";ctx.fillText(Math.round(maxM/12)+"年後",w-pad,h-6)}
+    function calculate(){
+      const a=+el("assets").value||0,m=+el("monthly").value||0,b=+el("bonus").value||0,age=+el("age").value||0,r=+el("rate").value||0,t=+el("target").value||1;
+      ids.forEach(id=>localStorage.setItem("roadmap_"+id,el(id).value));
+      const months=reachMonths(a,m,b,r,t),progress=Math.min(100,a/t*100);el("bar").style.width=progress+"%";el("progressLabel").textContent=progress.toFixed(1)+"%";
+      if(months===null){el("arrival").textContent="100年超";el("arrivalSub").textContent="積立額か目標金額を見直すと、現実的な道筋が見えます。";el("yearsLeft").textContent="計算範囲外";el("faster").textContent="—";el("principal").textContent="—";el("status").textContent="要見直し";el("advice").textContent="まずは毎月の積立を1万円増やした場合を試してください。小さな変更でも長期では大きな差になります。";draw(a,m,b,r,t,600);return}
+      const years=months/12,arrivalAge=age+years,targetMonths=Math.max(1,months-60),need=neededMonthly(a,b,r,t,targetMonths),principal=a+m*months+b*Math.floor(months/12);
+      el("arrival").textContent=arrivalAge.toFixed(1)+"歳";el("arrivalSub").textContent=`約${Math.floor(years)}年${Math.round(months%12)}か月後に ${shortYen(t)}`;el("yearsLeft").textContent=years.toFixed(1)+"年";el("faster").textContent=months<=60?"すでに5年以内":`月 ${shortYen(need)}`;el("principal").textContent=shortYen(principal);el("status").textContent=years<=20?"順調圏":years<=35?"長期計画":"改善余地あり";
+      const diff=Math.max(0,need-m);el("advice").textContent=months<=60?"目標は5年以内です。生活防衛資金を確保しながら継続を優先しましょう。":diff<1000?"今の計画で、ほぼ5年前倒しできます。継続が最大の武器です。":`5年早めるには、今より毎月約${shortYen(diff)}の上積みが目安。難しければ半分だけ増やす案も試せます。`;
+      el("scenarios").innerHTML=[3,5,7].map(sr=>{const sm=reachMonths(a,m,b,sr,t);return `<div class="scenario"><span>年利 ${sr}%</span><span>${sm===null?"100年超":(sm/12).toFixed(1)+"年後"}</span><b>${sm===null?"—":(age+sm/12).toFixed(1)+"歳"}</b></div>`}).join("");
+      draw(a,m,b,r,t,months)
+    }
+    ids.forEach(id=>{const saved=localStorage.getItem("roadmap_"+id);if(saved!==null)el(id).value=saved;el(id).addEventListener("input",()=>clearTimeout(window.calcTimer)||null);el(id).addEventListener("change",calculate)});
+    el("run").addEventListener("click",calculate);calculate();
+  </script>
+</body>
+</html>
