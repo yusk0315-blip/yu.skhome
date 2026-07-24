@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10231c">
+  <title>反射神経タップ｜無料ブラウザゲーム</title>
+  <meta name="description" content="光った瞬間にタップ。5回の平均反応速度を測れる、スマホ向け無料ブラウザゲーム。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--ink:#17211d;--muted:#68726c;--green:#176b4d;--gold:#d6923b;--red:#b84343;--line:rgba(23,33,29,.13)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;min-height:100svh;font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 0%,rgba(214,146,59,.17),transparent 24rem),linear-gradient(180deg,var(--bg),#ece8df);display:grid;place-items:center;padding:18px}
+    main{width:min(100%,520px)}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .back{color:var(--green);text-decoration:none;font-weight:800;font-size:13px}
+    .tag{font-size:11px;letter-spacing:.12em;color:var(--green);font-weight:900}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:0 20px 55px rgba(23,33,29,.11)}
+    h1{margin:0;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,8vw,44px);line-height:1.25}
+    .lead{color:var(--muted);line-height:1.8;margin:10px 0 18px;font-size:14px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .stat{border:1px solid var(--line);border-radius:16px;padding:11px;text-align:center;background:#fff}
+    .stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}
+    .stat strong{font-size:18px}
+    #arena{width:100%;aspect-ratio:1/1;border:0;border-radius:24px;background:#d9ddd8;color:var(--ink);display:grid;place-items:center;padding:24px;cursor:pointer;touch-action:manipulation;user-select:none;transition:background .12s,transform .08s;box-shadow:inset 0 0 0 1px rgba(23,33,29,.08)}
+    #arena:active{transform:scale(.992)}
+    #arena.wait{background:#17372c;color:white}
+    #arena.go{background:#52cf82;color:#092116;box-shadow:0 0 0 8px rgba(82,207,130,.16)}
+    #arena.early{background:#e9aaa4;color:#4d1712}
+    .arenaText{text-align:center}
+    .arenaText b{display:block;font-size:clamp(28px,8vw,46px);font-family:Georgia,"Yu Mincho",serif}
+    .arenaText span{display:block;margin-top:10px;font-size:13px;line-height:1.6;opacity:.82}
+    .results{margin-top:16px;min-height:44px;display:flex;flex-wrap:wrap;gap:7px}
+    .chip{padding:7px 10px;border-radius:999px;background:rgba(23,107,77,.09);color:var(--green);font-size:12px;font-weight:800}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+    button.action{min-height:48px;border-radius:999px;border:1px solid var(--line);font:inherit;font-weight:800;background:white;color:var(--ink)}
+    button.primary{background:var(--green);color:white;border-color:var(--green)}
+    .note{margin:14px 2px 0;color:var(--muted);font-size:11px;line-height:1.7}
+    @media(max-width:390px){.card{padding:18px;border-radius:22px}.actions{grid-template-columns:1fr}.stats{gap:5px}.stat{padding:9px 5px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="back" href="../">← アプリ集へ戻る</a><span class="tag">DAILY APP 01</span></div>
+  <section class="card">
+    <h1>反射神経タップ</h1>
+    <p class="lead">画面が緑に変わった瞬間にタップ。5回の平均タイムに挑戦しよう。</p>
+    <div class="stats">
+      <div class="stat"><small>ROUND</small><strong id="round">0 / 5</strong></div>
+      <div class="stat"><small>AVERAGE</small><strong id="avg">---</strong></div>
+      <div class="stat"><small>BEST</small><strong id="best">---</strong></div>
+    </div>
+    <button id="arena" aria-label="反射神経ゲーム画面">
+      <span class="arenaText"><b id="mainText">スタート</b><span id="subText">タップしてゲーム開始</span></span>
+    </button>
+    <div id="results" class="results" aria-live="polite"></div>
+    <div class="actions">
+      <button class="action primary" id="restart">最初から挑戦</button>
+      <button class="action" id="share">結果をシェア</button>
+    </div>
+    <p class="note">※ 緑になる前にタップするとフライング。端末やブラウザにより数値には多少の差があります。ベスト記録はこの端末に保存されます。</p>
+  </section>
+</main>
+<script>
+(() => {
+  const arena=document.getElementById('arena'),mainText=document.getElementById('mainText'),subText=document.getElementById('subText');
+  const roundEl=document.getElementById('round'),avgEl=document.getElementById('avg'),bestEl=document.getElementById('best'),resultsEl=document.getElementById('results');
+  const restart=document.getElementById('restart'),share=document.getElementById('share');
+  let state='idle',timer=null,startAt=0,times=[];
+  const saved=Number(localStorage.getItem('reflexTapBest'))||0;
+  bestEl.textContent=saved?saved+'ms':'---';
+  function render(){
+    roundEl.textContent=`${times.length} / 5`;
+    avgEl.textContent=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length)+'ms':'---';
+    resultsEl.innerHTML=times.map((t,i)=>`<span class="chip">${i+1}回目 ${t}ms</span>`).join('');
+  }
+  function ready(){
+    if(times.length>=5){finish();return;}
+    state='waiting';arena.className='wait';mainText.textContent='待って…';subText.textContent='緑になるまでタップしない';
+    timer=setTimeout(()=>{state='go';startAt=performance.now();arena.className='go';mainText.textContent='今！';subText.textContent='すぐタップ';},1200+Math.random()*2600);
+  }
+  function finish(){
+    state='done';arena.className='';const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);const currentBest=saved&&saved<avg?saved:avg;
+    localStorage.setItem('reflexTapBest',String(currentBest));bestEl.textContent=currentBest+'ms';mainText.textContent=avg<230?'速い！':avg<300?'いい反応！':'もう一回！';subText.textContent=`5回平均 ${avg}ms`;
+  }
+  function tap(){
+    if(state==='idle'||state==='done'){times=[];render();ready();return;}
+    if(state==='waiting'){clearTimeout(timer);state='early';arena.className='early';mainText.textContent='フライング！';subText.textContent='タップしてやり直し';return;}
+    if(state==='early'){ready();return;}
+    if(state==='go'){
+      const t=Math.round(performance.now()-startAt);times.push(t);render();state='pause';arena.className='';mainText.textContent=t+'ms';subText.textContent=times.length<5?'タップして次へ':'結果を見る';return;
+    }
+    if(state==='pause'){ready();}
+  }
+  arena.addEventListener('click',tap);
+  restart.addEventListener('click',()=>{clearTimeout(timer);state='idle';times=[];render();arena.className='';mainText.textContent='スタート';subText.textContent='タップしてゲーム開始';});
+  share.addEventListener('click',async()=>{
+    if(!times.length){subText.textContent='先にゲームを遊んでね';return;}
+    const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);const text=`反射神経タップ：平均 ${avg}ms！あなたも挑戦してみて。`;
+    try{if(navigator.share)await navigator.share({title:'反射神経タップ',text,url:location.href});else{await navigator.clipboard.writeText(text+' '+location.href);subText.textContent='結果をコピーしました';}}catch(e){}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
