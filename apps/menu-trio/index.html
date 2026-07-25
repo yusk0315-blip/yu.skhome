@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>献立3択メーカー｜今日なに食べる？</title>
+  <meta name="description" content="気分・時間・食材から今日の献立候補を3つ提案する無料ミニアプリ。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--green:#176b4d;--orange:#d6923b;--shadow:0 18px 50px rgba(23,33,29,.10)}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.16),transparent 25rem),linear-gradient(180deg,var(--bg),#ece9df);min-height:100vh}
+    button,input,select{font:inherit}.wrap{width:min(680px,100%);margin:auto;padding:18px 16px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.home{color:var(--green);text-decoration:none;font-weight:800}.badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(23,107,77,.09);color:var(--green);font-weight:800}
+    .hero{margin-top:18px;padding:28px 22px;border-radius:28px;background:#123d30;color:#fff;box-shadow:var(--shadow)}.hero small{letter-spacing:.18em;color:#e4b767;font-weight:800}.hero h1{margin:10px 0 8px;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(31px,9vw,46px);line-height:1.25}.hero p{margin:0;color:rgba(255,255,255,.76);line-height:1.8}
+    .panel{margin-top:16px;padding:20px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 10px 30px rgba(23,33,29,.06)}.field{margin-bottom:17px}.field:last-child{margin-bottom:0}.field label{display:block;margin-bottom:8px;font-weight:800}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{position:relative}.choice input{position:absolute;opacity:0}.choice span{display:flex;min-height:48px;align-items:center;justify-content:center;text-align:center;padding:8px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:14px;font-weight:700}.choice input:checked+span{background:var(--green);border-color:var(--green);color:#fff}
+    select,input[type=text]{width:100%;min-height:50px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text)}.make{width:100%;min-height:56px;margin-top:18px;border:0;border-radius:999px;background:var(--green);color:#fff;font-weight:900;box-shadow:0 10px 24px rgba(23,107,77,.22)}.make:active{transform:translateY(1px)}
+    .result{display:none;margin-top:18px}.result.show{display:block}.result h2{margin:0 0 12px;font-family:Georgia,"Yu Mincho",serif}.cards{display:grid;gap:11px}.meal{padding:17px;border:1px solid var(--line);border-radius:18px;background:#fff}.mealTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.meal h3{margin:0;font-size:18px}.num{display:grid;place-items:center;min-width:32px;height:32px;border-radius:50%;background:rgba(214,146,59,.14);color:#9a5d13;font-weight:900}.meal p{margin:8px 0 0;color:var(--muted);line-height:1.7;font-size:14px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.subbtn{min-height:46px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:800;color:var(--green)}.history{margin-top:16px;color:var(--muted);font-size:13px;line-height:1.7}.notice{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+    @media(max-width:430px){.choices{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.panel{padding:17px}.hero{padding:24px 19px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="home" href="../../">← ホームへ</a><span class="badge">無料・登録不要</span></div>
+  <section class="hero"><small>TODAY'S MENU</small><h1>献立3択メーカー</h1><p>気分と使える時間を選ぶだけ。今日の候補を3つに絞ります。</p></section>
+  <section class="panel" aria-label="献立条件">
+    <div class="field"><label>今日の気分</label><div class="choices">
+      <label class="choice"><input type="radio" name="mood" value="さっぱり"><span>さっぱり</span></label>
+      <label class="choice"><input type="radio" name="mood" value="がっつり" checked><span>がっつり</span></label>
+      <label class="choice"><input type="radio" name="mood" value="やさしい"><span>やさしい</span></label>
+    </div></div>
+    <div class="field"><label for="time">作れる時間</label><select id="time"><option value="10">10分以内</option><option value="20" selected>20分くらい</option><option value="40">40分以上OK</option></select></div>
+    <div class="field"><label for="main">使いたい主役食材（任意）</label><input id="main" type="text" maxlength="20" placeholder="例：豚肉、卵、豆腐"></div>
+    <button class="make" id="make">今日の3択をつくる</button>
+  </section>
+  <section class="panel result" id="result" aria-live="polite"><h2>今日の3択</h2><div class="cards" id="cards"></div><div class="actions"><button class="subbtn" id="again">別の3択にする</button><button class="subbtn" id="copy">結果をコピー</button></div><div class="history" id="history"></div></section>
+  <p class="notice">候補は目安です。アレルギーや体調に合わせて調整してください。</p>
+</main>
+<script>
+const menus={
+  "さっぱり":[
+    ["豚しゃぶサラダ","ポン酢で軽く。野菜も一緒に取れる。",15],["鶏むねの梅しそ焼き","フライパン一つで爽やか。",20],["冷やしうどん","卵やツナをのせれば一皿で完成。",10],["鮭の南蛮漬け風","焼いた鮭に甘酢野菜を合わせる。",35],["豆腐とトマトの和風丼","火をほぼ使わずすぐ完成。",10],["おろしハンバーグ","大根おろしで重すぎない主菜。",40]],
+  "がっつり":[
+    ["豚のしょうが焼き","白ごはんが進む定番。",20],["親子丼","一鍋で早く、満足感も高い。",15],["麻婆豆腐","豆腐でボリュームを出しやすい。",20],["チキン照り焼き丼","甘辛味で家族向け。",25],["焼肉風スタミナ炒め","肉と野菜をまとめて炒める。",15],["煮込みハンバーグ","時間がある日にしっかり主菜。",40]],
+  "やさしい":[
+    ["卵雑炊","胃にやさしく、冷蔵庫の野菜も使える。",10],["豆腐そぼろあん","やわらかく食べやすい。",20],["鮭ときのこのホイル焼き","包んで焼くだけで味がまとまる。",30],["鶏団子スープ","野菜を足して一杯で満足。",35],["にゅうめん","温かくて軽い麺料理。",10],["肉じゃが","ほっとする定番の煮物。",40]]
+};
+const result=document.getElementById('result'),cards=document.getElementById('cards'),history=document.getElementById('history');
+let latest=[];
+function choose(){
+  const mood=document.querySelector('input[name=mood]:checked').value;
+  const max=Number(document.getElementById('time').value);
+  const ingredient=document.getElementById('main').value.trim();
+  let pool=menus[mood].filter(x=>x[2]<=max+5);
+  if(pool.length<3) pool=menus[mood];
+  latest=[...pool].sort(()=>Math.random()-.5).slice(0,3).map(x=>ingredient? [`${ingredient}でアレンジ：${x[0]}`,x[1],x[2]]:x);
+  cards.innerHTML=latest.map((m,i)=>`<article class="meal"><div class="mealTop"><h3>${escapeHtml(m[0])}</h3><span class="num">${i+1}</span></div><p>${escapeHtml(m[1])}｜目安 ${m[2]}分</p></article>`).join('');
+  result.classList.add('show');
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+  const record={date:new Date().toLocaleDateString('ja-JP'),menu:latest[0][0]};
+  const old=JSON.parse(localStorage.getItem('menuTrioHistory')||'[]');
+  localStorage.setItem('menuTrioHistory',JSON.stringify([record,...old].slice(0,5)));
+  renderHistory();
+}
+function renderHistory(){const old=JSON.parse(localStorage.getItem('menuTrioHistory')||'[]');history.textContent=old.length?'最近の1位候補：'+old.map(x=>x.menu).join('、'):''}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+document.getElementById('make').addEventListener('click',choose);document.getElementById('again').addEventListener('click',choose);
+document.getElementById('copy').addEventListener('click',async()=>{if(!latest.length)return;const text='今日の献立候補\n'+latest.map((m,i)=>`${i+1}. ${m[0]}`).join('\n');try{await navigator.clipboard.writeText(text);document.getElementById('copy').textContent='コピーしました';setTimeout(()=>document.getElementById('copy').textContent='結果をコピー',1500)}catch{alert(text)}});
+renderHistory();
+</script>
+</body>
+</html>
