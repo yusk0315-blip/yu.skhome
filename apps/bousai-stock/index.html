@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#9a4f24">
+  <title>防災備蓄 何日もつ？｜無料チェック</title>
+  <meta name="description" content="家族人数と備蓄量から、水・食料・簡易トイレが何日もつか確認できる無料ミニアプリ。">
+  <style>
+    :root{--bg:#f7f2e9;--card:#fffdfa;--text:#28221d;--muted:#746a61;--line:rgba(40,34,29,.14);--main:#9a4f24;--sub:#d08a3b;--ok:#28734c;--warn:#b96913;--bad:#b43b32;--shadow:0 18px 50px rgba(61,42,27,.11)}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(208,138,59,.18),transparent 25rem),linear-gradient(180deg,var(--bg),#eee7dc)}
+    button,input{font:inherit}.wrap{width:min(700px,100%);margin:auto;padding:18px 16px 54px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.home{color:var(--main);text-decoration:none;font-weight:900}.badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(154,79,36,.09);color:var(--main);font-weight:900}
+    .hero{margin-top:18px;padding:27px 22px;border-radius:28px;background:#4b2d1e;color:#fff;box-shadow:var(--shadow)}.hero small{letter-spacing:.18em;color:#f0b970;font-weight:900}.hero h1{margin:10px 0 8px;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,8vw,45px);line-height:1.25}.hero p{margin:0;color:rgba(255,255,255,.78);line-height:1.8}
+    .panel{margin-top:16px;padding:20px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 10px 30px rgba(61,42,27,.06)}.panel h2{margin:0 0 14px;font-size:19px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;margin-bottom:7px;font-size:13px;font-weight:900}.input{display:flex;align-items:center;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}.input input{width:100%;min-width:0;height:50px;border:0;padding:0 12px;color:var(--text);background:transparent}.input input:focus{outline:3px solid rgba(154,79,36,.15)}.unit{padding-right:12px;color:var(--muted);font-size:13px;white-space:nowrap}.calc{width:100%;min-height:56px;margin-top:18px;border:0;border-radius:999px;background:var(--main);color:#fff;font-weight:900;box-shadow:0 10px 24px rgba(154,79,36,.22)}.calc:active{transform:translateY(1px)}
+    .result{display:none}.result.show{display:block}.summary{padding:17px;border-radius:18px;background:#f6eadf;text-align:center}.summary strong{display:block;font-size:34px;color:var(--main)}.summary span{color:var(--muted);font-size:13px}.items{display:grid;gap:10px;margin-top:13px}.item{padding:15px;border:1px solid var(--line);border-radius:17px;background:#fff}.itemTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.item h3{margin:0;font-size:16px}.days{font-size:22px;font-weight:950}.bar{height:9px;margin-top:10px;border-radius:999px;background:#ece6df;overflow:hidden}.fill{height:100%;border-radius:inherit}.note{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.65}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.subbtn{min-height:46px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--main);font-weight:900}.tips{margin:14px 0 0;padding-left:1.2em;color:var(--muted);font-size:13px;line-height:1.8}.foot{text-align:center;margin-top:18px;color:var(--muted);font-size:12px;line-height:1.7}
+    @media(max-width:480px){.grid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.panel{padding:17px}.hero{padding:24px 19px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="home" href="../../">← ホームへ</a><span class="badge">無料・登録不要</span></div>
+  <section class="hero"><small>EMERGENCY STOCK</small><h1>防災備蓄<br>何日もつ？</h1><p>家族人数と今ある備蓄を入力すると、水・食料・簡易トイレの持続日数をまとめて確認できます。</p></section>
+  <section class="panel" aria-label="備蓄量入力">
+    <h2>いま家にある量</h2>
+    <div class="grid">
+      <div class="field"><label for="people">家族人数</label><div class="input"><input id="people" type="number" min="1" max="20" inputmode="numeric" value="3"><span class="unit">人</span></div></div>
+      <div class="field"><label for="water">飲料水</label><div class="input"><input id="water" type="number" min="0" step="0.5" inputmode="decimal" value="18"><span class="unit">L</span></div></div>
+      <div class="field"><label for="food">食料</label><div class="input"><input id="food" type="number" min="0" inputmode="numeric" value="27"><span class="unit">食</span></div></div>
+      <div class="field"><label for="toilet">簡易トイレ</label><div class="input"><input id="toilet" type="number" min="0" inputmode="numeric" value="45"><span class="unit">回分</span></div></div>
+    </div>
+    <button class="calc" id="calc">備蓄日数をチェック</button>
+  </section>
+  <section class="panel result" id="result" aria-live="polite">
+    <h2>チェック結果</h2>
+    <div class="summary"><strong id="minimum">0日</strong><span>いちばん先になくなる備蓄を基準にした日数</span></div>
+    <div class="items" id="items"></div>
+    <div class="actions"><button class="subbtn" id="save">この内容を保存</button><button class="subbtn" id="copy">結果をコピー</button></div>
+    <ul class="tips"><li>まずは3日分、できれば7日分を目安に少しずつ増やしましょう。</li><li>水は1人1日3L、食料は1人1日3食、簡易トイレは1人1日5回で計算しています。</li></ul>
+  </section>
+  <p class="foot">この結果は家庭での備蓄整理用の目安です。乳幼児・高齢者・持病・ペットなど、家族ごとの必要品も別に確認してください。</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);let latest=null;
+function n(id){return Math.max(0,Number($(id).value)||0)}
+function esc(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function status(days){if(days>=7)return{label:'7日以上',color:'var(--ok)',msg:'ひとまず安心。期限と入れ替え日も確認。'};if(days>=3)return{label:'3〜6日',color:'var(--warn)',msg:'最低ライン。7日分を目標に追加。'};return{label:'3日未満',color:'var(--bad)',msg:'優先して買い足したい量です。'}}
+function calc(){const people=Math.max(1,n('people'));const data=[{name:'飲料水',amount:n('water'),need:people*3,unit:'L'},{name:'食料',amount:n('food'),need:people*3,unit:'食'},{name:'簡易トイレ',amount:n('toilet'),need:people*5,unit:'回分'}].map(x=>({...x,days:x.amount/x.need}));const min=Math.min(...data.map(x=>x.days));latest={people,data,min};$('minimum').textContent=(Math.floor(min*10)/10).toFixed(1)+'日';$('items').innerHTML=data.map(x=>{const s=status(x.days),pct=Math.min(100,x.days/7*100);return `<article class="item"><div class="itemTop"><h3>${esc(x.name)}</h3><span class="days" style="color:${s.color}">${x.days.toFixed(1)}日</span></div><div class="bar"><div class="fill" style="width:${pct}%;background:${s.color}"></div></div><p class="note">${s.label}｜${s.msg} 1日あたり ${x.need}${x.unit} 使用で計算。</p></article>`}).join('');$('result').classList.add('show');$('result').scrollIntoView({behavior:'smooth',block:'start'})}
+function restore(){try{const d=JSON.parse(localStorage.getItem('bousaiStock')||'null');if(!d)return;['people','water','food','toilet'].forEach(k=>{if(d[k]!==undefined)$(k).value=d[k]})}catch{}}
+$('calc').addEventListener('click',calc);$('save').addEventListener('click',()=>{const d={people:n('people'),water:n('water'),food:n('food'),toilet:n('toilet')};localStorage.setItem('bousaiStock',JSON.stringify(d));$('save').textContent='保存しました';setTimeout(()=>$('save').textContent='この内容を保存',1500)});$('copy').addEventListener('click',async()=>{if(!latest)calc();const text=`防災備蓄チェック（${latest.people}人）\n最低 ${latest.min.toFixed(1)}日分\n`+latest.data.map(x=>`${x.name}: ${x.days.toFixed(1)}日分`).join('\n');try{await navigator.clipboard.writeText(text);$('copy').textContent='コピーしました';setTimeout(()=>$('copy').textContent='結果をコピー',1500)}catch{alert(text)}});restore();calc();
+</script>
+</body>
+</html>
