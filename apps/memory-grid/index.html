@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#102a24">
+  <title>ひかるマス記憶ゲーム｜ゆーすけ無料アプリ集</title>
+  <meta name="description" content="光ったマスの場所を覚えて順番にタップする、スマホ対応の無料記憶力ゲームです。">
+  <style>
+    :root{--bg:#f4f1e9;--card:#fffdf8;--ink:#17211d;--muted:#6c756f;--line:rgba(23,33,29,.14);--green:#176b4d;--gold:#d6923b;--red:#c84b45;--shadow:0 18px 46px rgba(23,33,29,.12)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;min-height:100svh;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.16),transparent 24rem),linear-gradient(180deg,var(--bg),#e8ebe5);display:flex;justify-content:center}
+    main{width:min(100%,680px);padding:18px 16px calc(32px + env(safe-area-inset-bottom))}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .home{color:var(--green);text-decoration:none;font-weight:800;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.72)}
+    .brand{font:700 15px Georgia,"Yu Mincho",serif;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+    .hero{padding:28px 22px 20px;background:linear-gradient(135deg,#123d30,#176b4d);color:#fff}
+    .eyebrow{font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.68);font-weight:800}
+    h1{font:700 clamp(28px,8vw,42px)/1.25 Georgia,"Yu Mincho",serif;margin:10px 0 8px}
+    .lead{margin:0;color:rgba(255,255,255,.76);line-height:1.8;font-size:14px}
+    .body{padding:20px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+    .stat{padding:12px 8px;border:1px solid var(--line);border-radius:14px;text-align:center;background:#fff}
+    .stat strong{display:block;font-size:22px;color:var(--green)}
+    .stat span{font-size:11px;color:var(--muted)}
+    .message{min-height:58px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border-radius:14px;background:#eef5f1;color:var(--green);font-weight:800;line-height:1.55;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;max-width:430px;margin:0 auto 18px}
+    .cell{aspect-ratio:1;border:0;border-radius:16px;background:#dfe6e1;box-shadow:inset 0 -5px 0 rgba(23,33,29,.08);transition:transform .12s,background .14s,box-shadow .14s;cursor:pointer}
+    .cell:active{transform:scale(.95)}
+    .cell.show{background:var(--gold);box-shadow:0 0 0 4px rgba(214,146,59,.22),0 8px 20px rgba(214,146,59,.25)}
+    .cell.correct{background:#4cae7b}.cell.wrong{background:var(--red)}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    button.control{min-height:52px;border-radius:14px;border:1px solid var(--line);font:800 15px inherit;cursor:pointer}
+    #start{grid-column:1/-1;background:var(--green);color:#fff;border-color:transparent}
+    #start:disabled{opacity:.55;cursor:not-allowed}
+    #sound,#reset{background:#fff;color:var(--ink)}
+    .howto{margin-top:18px;padding:16px;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid var(--line)}
+    .howto h2{font-size:15px;margin:0 0 8px}.howto ol{margin:0;padding-left:1.35em;color:var(--muted);line-height:1.8;font-size:14px}
+    .share{width:100%;margin-top:12px;min-height:48px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);font-weight:800}
+    footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px}
+    @media(max-width:390px){.body{padding:16px}.grid{gap:7px}.cell{border-radius:13px}.stats{gap:6px}.stat strong{font-size:19px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="home" href="../../">← ホームへ</a><span class="brand">YUSUKE DIGITAL STUDIO</span></div>
+  <section class="card">
+    <header class="hero"><div class="eyebrow">MEMORY GAME</div><h1>ひかるマス記憶ゲーム</h1><p class="lead">光ったマスを、同じ順番でタップ。どこまで覚えられる？</p></header>
+    <div class="body">
+      <div class="stats">
+        <div class="stat"><strong id="level">1</strong><span>レベル</span></div>
+        <div class="stat"><strong id="score">0</strong><span>スコア</span></div>
+        <div class="stat"><strong id="best">0</strong><span>ベスト</span></div>
+      </div>
+      <div id="message" class="message" aria-live="polite">「スタート」を押してください</div>
+      <div id="grid" class="grid" aria-label="4×4の記憶ゲーム盤"></div>
+      <div class="controls">
+        <button id="start" class="control" type="button">ゲームスタート</button>
+        <button id="sound" class="control" type="button">音：ON</button>
+        <button id="reset" class="control" type="button">記録をリセット</button>
+      </div>
+      <button id="share" class="share" type="button">結果をコピー</button>
+      <aside class="howto"><h2>遊び方</h2><ol><li>光るマスの順番を覚える</li><li>光り終わったら同じ順番でタップ</li><li>成功すると、覚える数が1つ増える</li></ol></aside>
+    </div>
+  </section>
+  <footer>登録不要・無料・ベスト記録はこの端末だけに保存されます。</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const grid = document.getElementById('grid');
+  const startBtn = document.getElementById('start');
+  const soundBtn = document.getElementById('sound');
+  const resetBtn = document.getElementById('reset');
+  const shareBtn = document.getElementById('share');
+  const msg = document.getElementById('message');
+  const levelEl = document.getElementById('level');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const cells = [];
+  let sequence = [], input = [], level = 1, score = 0, accepting = false, playing = false, soundOn = true;
+  let best = Number(localStorage.getItem('memoryGridBest') || 0);
+  bestEl.textContent = best;
+
+  for (let i=0;i<16;i++) {
+    const b=document.createElement('button'); b.type='button'; b.className='cell'; b.setAttribute('aria-label',`${i+1}番のマス`);
+    b.addEventListener('click',()=>tap(i)); grid.appendChild(b); cells.push(b);
+  }
+
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  function tone(freq=520,duration=.09){
+    if(!soundOn) return;
+    try{const C=window.AudioContext||window.webkitAudioContext; const ctx=new C(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=freq; g.gain.setValueAtTime(.08,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration); o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+duration);}catch(e){}
+  }
+  function update(){levelEl.textContent=level;scoreEl.textContent=score;bestEl.textContent=best}
+  function clearClasses(){cells.forEach(c=>c.classList.remove('show','correct','wrong'))}
+  async function showSequence(){
+    accepting=false; startBtn.disabled=true; msg.textContent='よく見て覚えてください'; await sleep(500);
+    for(const n of sequence){cells[n].classList.add('show');tone(440+n*18);await sleep(Math.max(220,520-level*18));cells[n].classList.remove('show');await sleep(120)}
+    input=[]; accepting=true; msg.textContent='同じ順番でタップ！'; startBtn.disabled=false;
+  }
+  async function nextRound(){level=sequence.length;sequence.push(Math.floor(Math.random()*16));update();await showSequence()}
+  async function tap(n){
+    if(!accepting) return; const pos=input.length; input.push(n);
+    if(n!==sequence[pos]){accepting=false;cells[n].classList.add('wrong');tone(150,.25);msg.textContent=`ゲームオーバー。レベル${level}まで到達！`;playing=false;startBtn.textContent='もう一度遊ぶ';if(score>best){best=score;localStorage.setItem('memoryGridBest',String(best));msg.textContent=`新記録！ スコア ${score}`;}update();setTimeout(clearClasses,700);return}
+    cells[n].classList.add('correct');tone(650+n*12);setTimeout(()=>cells[n].classList.remove('correct'),180);
+    if(input.length===sequence.length){accepting=false;score += level*10;update();msg.textContent='成功！ 次は1つ増えます';await sleep(700);level++;await nextRound()}
+  }
+  function start(){sequence=[];input=[];level=1;score=0;playing=true;clearClasses();startBtn.textContent='プレイ中';nextRound()}
+  startBtn.addEventListener('click',()=>{if(!playing)start()});
+  soundBtn.addEventListener('click',()=>{soundOn=!soundOn;soundBtn.textContent=`音：${soundOn?'ON':'OFF'}`});
+  resetBtn.addEventListener('click',()=>{best=0;localStorage.removeItem('memoryGridBest');update();msg.textContent='ベスト記録をリセットしました'});
+  shareBtn.addEventListener('click',async()=>{const text=`ひかるマス記憶ゲームでスコア${score}！ ベスト${best}\nhttps://yusk0315-blip.github.io/yu.skhome/apps/memory-grid/`;try{await navigator.clipboard.writeText(text);shareBtn.textContent='コピーしました！';setTimeout(()=>shareBtn.textContent='結果をコピー',1400)}catch(e){prompt('結果をコピーしてください',text)}});
+})();
+</script>
+</body>
+</html>
