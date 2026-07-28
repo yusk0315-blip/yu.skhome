@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ことばシャッフル｜ひらがな並べ替えゲーム</title>
+<meta name="description" content="バラバラになったひらがなを正しい言葉に並べ替える、スマホ対応の無料ブラウザゲーム。">
+<style>
+:root{--bg:#f4f1e8;--card:#fffdf7;--text:#17211d;--muted:#68726c;--accent:#176b4d;--accent2:#d6923b;--line:rgba(23,33,29,.14);--shadow:0 18px 50px rgba(23,33,29,.10)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.16),transparent 28rem),linear-gradient(180deg,var(--bg),#ebe7dc)}
+.wrap{max-width:720px;margin:auto;padding:18px 16px 48px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.home{color:var(--accent);text-decoration:none;font-weight:800}.badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(23,107,77,.09);color:var(--accent);font-weight:800}
+.hero{margin-top:18px;padding:24px;border-radius:26px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}h1{margin:8px 0 8px;font-size:clamp(28px,8vw,44px);line-height:1.2;font-family:Georgia,"Yu Mincho",serif}.lead{margin:0;color:var(--muted);line-height:1.8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.stat{padding:12px 8px;text-align:center;border-radius:16px;background:#f5f7f3;border:1px solid var(--line)}.stat strong{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+.game{margin-top:14px;padding:22px;border-radius:24px;background:#123d30;color:white;box-shadow:var(--shadow)}.label{font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.62)}.hint{margin:8px 0 16px;color:rgba(255,255,255,.78);font-size:14px}.answer{min-height:64px;padding:14px;border-radius:16px;background:rgba(255,255,255,.09);border:1px dashed rgba(255,255,255,.3);display:flex;gap:8px;flex-wrap:wrap;align-items:center}.placeholder{color:rgba(255,255,255,.48)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}.tile{min-height:58px;border:0;border-radius:16px;background:#fff;color:var(--text);font-size:25px;font-weight:900;box-shadow:0 6px 0 rgba(0,0,0,.13);touch-action:manipulation}.tile:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.13)}.tile.used{opacity:.25;pointer-events:none}.chosen{display:inline-grid;place-items:center;min-width:42px;height:42px;border-radius:12px;background:#fff;color:var(--text);font-size:22px;font-weight:900}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}button.action{min-height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.25);font-weight:800;font-size:15px}.clear{background:transparent;color:white}.check{background:var(--accent2);color:#251b0d;border:0!important}.message{min-height:28px;margin-top:14px;text-align:center;font-weight:800}.ok{color:#ffdb88}.bad{color:#ffc0b8}
+.info{margin-top:16px;padding:20px;border-radius:22px;background:var(--card);border:1px solid var(--line)}.info h2{margin:0 0 8px;font-size:18px}.info p{margin:0;color:var(--muted);line-height:1.8;font-size:14px}.footer{text-align:center;margin-top:20px;color:var(--muted);font-size:12px}
+@media(max-width:480px){.hero{padding:20px}.game{padding:18px}.tiles{grid-template-columns:repeat(4,1fr);gap:8px}.tile{min-height:54px;font-size:23px}.stats{gap:6px}.stat strong{font-size:19px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><a class="home" href="../../">← ホームへ戻る</a><span class="badge">無料・登録不要</span></div>
+<section class="hero"><div class="label" style="color:var(--accent)">WORD PUZZLE</div><h1>ことばシャッフル</h1><p class="lead">バラバラになったひらがなを、正しい言葉に並べ替えよう。10問で最高スコアを目指します。</p>
+<div class="stats"><div class="stat"><strong id="qno">1/10</strong><span>問題</span></div><div class="stat"><strong id="score">0</strong><span>スコア</span></div><div class="stat"><strong id="best">0</strong><span>ベスト</span></div></div></section>
+<section class="game" aria-live="polite"><div class="label">HINT</div><div class="hint" id="hint">読み込み中…</div><div class="answer" id="answer"><span class="placeholder">文字を順番にタップ</span></div><div class="tiles" id="tiles"></div><div class="actions"><button class="action clear" id="clear">やり直す</button><button class="action check" id="check">決定する</button></div><div class="message" id="message"></div></section>
+<section class="info"><h2>遊び方</h2><p>文字を正しい順番にタップして「決定する」を押します。正解が早いほど得点アップ。10問終了時のベスト記録は端末に保存されます。</p></section>
+<div class="footer">YUSUKE DIGITAL STUDIO</div>
+</main>
+<script>
+const words=[
+ {w:'ひまわり',h:'夏に咲く大きな黄色い花'}, {w:'えんぴつ',h:'文字を書く文房具'}, {w:'かみなり',h:'空が光って大きな音がする現象'}, {w:'たまごやき',h:'卵を焼いた定番のおかず'}, {w:'しんかんせん',h:'とても速い鉄道'}, {w:'ゆうえんち',h:'観覧車や乗り物がある場所'}, {w:'おにぎり',h:'ご飯を三角などに握った食べ物'}, {w:'あさがお',h:'朝に花を開く夏の植物'}, {w:'しょうぼうしゃ',h:'火事の現場へ向かう赤い車'}, {w:'てんとうむし',h:'赤い背中に黒い点がある虫'}, {w:'くつした',h:'足にはく衣類'}, {w:'すべりだい',h:'公園にある上から滑る遊具'}, {w:'ほしぞら',h:'星がたくさん見える夜空'}, {w:'かたつむり',h:'雨の日によく見る殻を持つ生き物'}, {w:'おべんとう',h:'箱に詰めて持ち運ぶ食事'}, {w:'じてんしゃ',h:'ペダルをこいで進む乗り物'}, {w:'せんたくき',h:'服を洗う家電'}, {w:'としょかん',h:'本を借りて読める場所'}, {w:'たんぽぽ',h:'綿毛になる黄色い花'}, {w:'れいぞうこ',h:'食べ物を冷やして保存する家電'}
+];
+let round=0, score=0, current=null, order=[], picked=[], start=0;
+const el=id=>document.getElementById(id); const bestKey='kotobaShuffleBest';
+el('best').textContent=localStorage.getItem(bestKey)||0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function next(){if(round>=10)return finish(); current=words[Math.floor(Math.random()*words.length)]; order=shuffle([...current.w].map((c,i)=>({c,i}))); if(order.map(x=>x.c).join('')===current.w) order.reverse(); picked=[]; start=Date.now(); el('qno').textContent=`${round+1}/10`; el('hint').textContent=current.h; el('message').textContent=''; render()}
+function render(){el('answer').innerHTML=picked.length?picked.map(x=>`<span class="chosen">${x.c}</span>`).join(''):'<span class="placeholder">文字を順番にタップ</span>'; el('tiles').innerHTML=order.map((x,i)=>`<button class="tile ${picked.some(p=>p.pos===i)?'used':''}" data-i="${i}">${x.c}</button>`).join(''); document.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(!picked.some(p=>p.pos===i)){picked.push({...order[i],pos:i});render()}})}
+function clearPicked(){picked=[];render();el('message').textContent=''}
+function check(){if(picked.length!==current.w.length){el('message').className='message bad';el('message').textContent='すべての文字を選んでね';return} const ans=picked.map(x=>x.c).join(''); if(ans===current.w){const sec=(Date.now()-start)/1000;const pts=Math.max(100,Math.round(1000-sec*45));score+=pts;el('score').textContent=score;el('message').className='message ok';el('message').textContent=`正解！ +${pts}点`;round++;setTimeout(next,700)}else{el('message').className='message bad';el('message').textContent='惜しい！もう一度並べてみよう';clearPicked();}}
+function finish(){const old=+(localStorage.getItem(bestKey)||0);if(score>old)localStorage.setItem(bestKey,score);el('best').textContent=Math.max(old,score);el('hint').textContent='10問終了！';el('answer').innerHTML=`<div style="width:100%;text-align:center"><strong style="font-size:30px">${score}点</strong><br><span style="color:rgba(255,255,255,.65)">おつかれさまでした</span></div>`;el('tiles').innerHTML='';el('check').textContent='もう一度遊ぶ';el('check').onclick=()=>{round=0;score=0;el('score').textContent=0;el('check').textContent='決定する';el('check').onclick=check;el('clear').style.visibility='visible';next()};el('clear').style.visibility='hidden';el('message').textContent=score>old?'ベスト記録更新！':''}
+el('clear').onclick=clearPicked;el('check').onclick=check;next();
+</script>
+</body></html>
