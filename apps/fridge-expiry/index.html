@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>冷蔵庫の期限チェッカー｜YUSUKE DIGITAL STUDIO</title>
+  <meta name="description" content="食品名と期限を登録して、今日食べるものをすぐ確認できる無料の冷蔵庫期限管理アプリ。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--accent:#176b4d;--warn:#b7791f;--danger:#b42318}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:linear-gradient(180deg,#f5f3ed,#e9eee9);color:var(--text);min-height:100vh}
+    .wrap{max-width:720px;margin:auto;padding:18px 14px 70px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.home{color:var(--accent);font-weight:800;text-decoration:none}.hero{margin-top:18px;padding:28px 22px;border-radius:24px;background:#123d30;color:#fff}.hero small{color:#e4b767;font-weight:800;letter-spacing:.14em}.hero h1{margin:10px 0;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(29px,8vw,42px)}.hero p{margin:0;color:rgba(255,255,255,.75);line-height:1.8}
+    .panel{margin-top:16px;padding:18px;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 30px rgba(23,33,29,.06)}label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}.row{display:grid;grid-template-columns:1.3fr 1fr;gap:10px}input,select,button{width:100%;min-height:48px;border-radius:14px;border:1px solid var(--line);font:inherit}input,select{padding:0 13px;background:#fff}button{border:0;background:var(--accent);color:#fff;font-weight:800;padding:0 16px;cursor:pointer}.secondary{background:#fff;color:var(--accent);border:1px solid var(--line)}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.stat{padding:12px 8px;border-radius:14px;background:#eef4f0;text-align:center}.stat strong{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+    .filters{display:flex;gap:8px;overflow:auto;margin-top:14px;padding-bottom:3px}.chip{width:auto;min-height:38px;padding:0 13px;border-radius:999px;background:#fff;color:var(--muted);border:1px solid var(--line);white-space:nowrap}.chip.active{background:var(--accent);color:#fff}.list{display:grid;gap:10px;margin-top:14px}.item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fff;border:1px solid var(--line)}.item h3{margin:0 0 5px;font-size:16px}.meta{font-size:12px;color:var(--muted)}.badge{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#e8f4ec;color:var(--accent)}.badge.warn{background:#fff4d8;color:var(--warn)}.badge.danger{background:#feeceb;color:var(--danger)}.remove{width:42px;min-height:42px;border-radius:50%;background:#fff;color:var(--danger);border:1px solid var(--line);font-size:20px}.empty{text-align:center;color:var(--muted);padding:26px 8px;line-height:1.8}.foot{margin-top:16px;color:var(--muted);font-size:12px;line-height:1.8}
+    @media(max-width:520px){.row{grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}.hero{padding:24px 18px}.panel{padding:15px}.item{align-items:start}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><strong>YUSUKE DIGITAL STUDIO</strong><a class="home" href="../../">ホームへ戻る</a></div>
+    <section class="hero"><small>FOOD LOSS CHECKER</small><h1>冷蔵庫の期限チェッカー</h1><p>食品と期限を登録すると、「今日食べる」「もうすぐ」「余裕あり」を自動整理。買ったまま忘れる食品を減らします。</p></section>
+    <section class="panel">
+      <form id="form">
+        <label for="name">食品名</label><input id="name" maxlength="30" placeholder="例：牛乳、豆腐、作り置きカレー" required>
+        <div class="row"><div><label for="date">期限</label><input id="date" type="date" required></div><div><label for="kind">保存場所</label><select id="kind"><option>冷蔵</option><option>冷凍</option><option>常温</option></select></div></div>
+        <button style="margin-top:16px" type="submit">登録する</button>
+      </form>
+      <div class="summary"><div class="stat"><strong id="urgent">0</strong><span>今日まで</span></div><div class="stat"><strong id="soon">0</strong><span>3日以内</span></div><div class="stat"><strong id="all">0</strong><span>登録合計</span></div></div>
+      <div class="filters"><button class="chip active" data-filter="all" type="button">すべて</button><button class="chip" data-filter="urgent" type="button">今日まで</button><button class="chip" data-filter="soon" type="button">3日以内</button><button class="chip" data-filter="safe" type="button">余裕あり</button></div>
+      <div id="list" class="list"></div>
+      <button id="clear" class="secondary" type="button" style="margin-top:12px">すべて削除</button>
+      <p class="foot">データはこの端末のブラウザ内だけに保存されます。期限表示は入力した日付を基準にした目安です。</p>
+    </section>
+  </main>
+  <script>
+    const KEY='yusuke-fridge-expiry-v1';
+    let items=JSON.parse(localStorage.getItem(KEY)||'[]');
+    let filter='all';
+    const $=id=>document.getElementById(id);
+    const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+    const diff=date=>Math.ceil((new Date(date+'T00:00:00')-today())/86400000);
+    const state=item=>{const d=diff(item.date);return d<=0?'urgent':d<=3?'soon':'safe'};
+    const label=item=>{const d=diff(item.date);if(d<0)return `${Math.abs(d)}日超過`;if(d===0)return '今日まで';if(d===1)return '明日まで';return `あと${d}日`};
+    function save(){localStorage.setItem(KEY,JSON.stringify(items))}
+    function render(){
+      items.sort((a,b)=>a.date.localeCompare(b.date));
+      $('urgent').textContent=items.filter(x=>state(x)==='urgent').length;
+      $('soon').textContent=items.filter(x=>state(x)==='soon').length;
+      $('all').textContent=items.length;
+      const shown=items.filter(x=>filter==='all'||state(x)===filter);
+      $('list').innerHTML=shown.length?shown.map(x=>`<article class="item"><div><h3>${escapeHtml(x.name)}</h3><div class="meta">${x.kind}・${x.date.replaceAll('-','/')}</div><span class="badge ${state(x)==='urgent'?'danger':state(x)==='soon'?'warn':''}">${label(x)}</span></div><button class="remove" aria-label="${escapeHtml(x.name)}を削除" data-id="${x.id}">×</button></article>`).join(''):'<div class="empty">まだ登録がありません。<br>冷蔵庫にある食品を1つ追加してみましょう。</div>';
+      document.querySelectorAll('.remove').forEach(b=>b.onclick=()=>{items=items.filter(x=>x.id!==b.dataset.id);save();render()});
+    }
+    function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+    $('form').addEventListener('submit',e=>{e.preventDefault();items.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name:$('name').value.trim(),date:$('date').value,kind:$('kind').value});save();e.target.reset();$('date').value=new Date().toISOString().slice(0,10);render()});
+    document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===b));render()});
+    $('clear').onclick=()=>{if(items.length&&confirm('登録した食品をすべて削除しますか？')){items=[];save();render()}};
+    $('date').value=new Date().toISOString().slice(0,10);render();
+  </script>
+</body>
+</html>
