@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>15パズル｜ゆーすけ無料アプリ集</title>
+  <meta name="description" content="1〜15の数字をスライドして順番に並べる、スマホ対応の無料15パズル。">
+  <style>
+    :root{--bg:#f4f1e8;--card:#fffdf7;--ink:#1d2a25;--muted:#6f7973;--line:#d9ddd8;--accent:#176b4d;--accent2:#d89a3d;--shadow:0 16px 40px rgba(29,42,37,.12)}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--ink);background:linear-gradient(180deg,#f8f5ed,#ece8de)}
+    .wrap{width:min(100%,540px);margin:auto;padding:20px 16px 40px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .home{color:var(--accent);text-decoration:none;font-weight:800}
+    .badge{font-size:12px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.7)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow)}
+    h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+    .lead{margin:0 0 18px;color:var(--muted);line-height:1.7}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .stat{background:#f6f4ee;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+    .stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
+    .board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;aspect-ratio:1;background:#dfe5df;border:1px solid #c8d0c9;border-radius:20px;padding:8px;touch-action:manipulation}
+    .tile{border:0;border-radius:14px;background:linear-gradient(145deg,#fff,#ece9df);box-shadow:0 5px 10px rgba(29,42,37,.12);font-weight:900;font-size:clamp(24px,8vw,38px);color:var(--ink);cursor:pointer;transition:transform .08s ease,opacity .08s ease}
+    .tile:active{transform:scale(.96)}
+    .tile.empty{background:transparent;box-shadow:none;cursor:default}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    button.action{min-height:50px;border-radius:14px;border:1px solid var(--line);font:inherit;font-weight:800;cursor:pointer}
+    .primary{background:var(--accent);color:#fff;border-color:var(--accent)!important}.secondary{background:#fff;color:var(--ink)}
+    .message{min-height:28px;margin:14px 0 0;text-align:center;font-weight:800;color:var(--accent)}
+    .how{margin-top:16px;padding:14px;border-radius:16px;background:#f6f4ee;color:var(--muted);line-height:1.7;font-size:14px}
+    .how b{color:var(--ink)}
+    @media(max-width:380px){.card{padding:16px}.controls{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="home" href="../../">← ホームへ戻る</a><span class="badge">登録・通信不要</span></div>
+    <section class="card">
+      <h1>15パズル</h1>
+      <p class="lead">空いているマスへ数字をスライドし、1から15まで順番に並べよう。</p>
+      <div class="stats">
+        <div class="stat"><b id="moves">0</b><span>手数</span></div>
+        <div class="stat"><b id="time">0:00</b><span>タイム</span></div>
+        <div class="stat"><b id="best">--</b><span>ベスト手数</span></div>
+      </div>
+      <div id="board" class="board" aria-label="15パズル盤面"></div>
+      <div class="controls">
+        <button id="shuffle" class="action primary">新しいゲーム</button>
+        <button id="reset" class="action secondary">最初からやり直す</button>
+      </div>
+      <p id="message" class="message" aria-live="polite"></p>
+      <div class="how"><b>遊び方：</b>空白の上下左右にある数字だけ動かせます。完成すると手数と時間を記録し、最少手数を端末に保存します。</div>
+    </section>
+  </main>
+<script>
+(() => {
+  const boardEl=document.getElementById('board');
+  const movesEl=document.getElementById('moves');
+  const timeEl=document.getElementById('time');
+  const bestEl=document.getElementById('best');
+  const messageEl=document.getElementById('message');
+  const solved=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+  let tiles=[...solved],startTiles=[...solved],moves=0,started=false,startAt=0,timerId=null;
+  const best=Number(localStorage.getItem('slide15-best')||0);
+  bestEl.textContent=best||'--';
+
+  function fmt(ms){const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+  function adjacent(a,b){const ar=Math.floor(a/4),ac=a%4,br=Math.floor(b/4),bc=b%4;return Math.abs(ar-br)+Math.abs(ac-bc)===1}
+  function render(){
+    boardEl.innerHTML='';
+    tiles.forEach((n,i)=>{
+      const b=document.createElement('button');
+      b.className='tile'+(n===0?' empty':'');
+      b.textContent=n||'';
+      b.setAttribute('aria-label',n?`${n}を動かす`:'空白');
+      if(n!==0)b.addEventListener('click',()=>move(i));
+      boardEl.appendChild(b);
+    });
+    movesEl.textContent=moves;
+  }
+  function startTimer(){
+    if(started)return;
+    started=true;startAt=Date.now();
+    timerId=setInterval(()=>timeEl.textContent=fmt(Date.now()-startAt),250);
+  }
+  function move(i){
+    const e=tiles.indexOf(0);
+    if(!adjacent(i,e))return;
+    startTimer();
+    [tiles[i],tiles[e]]=[tiles[e],tiles[i]];moves++;render();
+    if(tiles.every((v,idx)=>v===solved[idx]))finish();
+  }
+  function finish(){
+    clearInterval(timerId);timerId=null;
+    const elapsed=Date.now()-startAt;
+    timeEl.textContent=fmt(elapsed);
+    const prev=Number(localStorage.getItem('slide15-best')||0);
+    if(!prev||moves<prev){localStorage.setItem('slide15-best',String(moves));bestEl.textContent=moves;messageEl.textContent=`完成！ 新記録 ${moves}手 🎉`;}
+    else messageEl.textContent=`完成！ ${moves}手・${fmt(elapsed)} 🎉`;
+    started=false;
+  }
+  function shuffle(){
+    tiles=[...solved];
+    let empty=15,last=-1;
+    for(let k=0;k<180;k++){
+      const choices=[];
+      for(let i=0;i<16;i++)if(adjacent(i,empty)&&i!==last)choices.push(i);
+      const pick=choices[Math.floor(Math.random()*choices.length)];
+      [tiles[pick],tiles[empty]]=[tiles[empty],tiles[pick]];last=empty;empty=pick;
+    }
+    if(tiles.every((v,i)=>v===solved[i]))return shuffle();
+    startTiles=[...tiles];moves=0;started=false;clearInterval(timerId);timerId=null;timeEl.textContent='0:00';messageEl.textContent='';render();
+  }
+  document.getElementById('shuffle').addEventListener('click',shuffle);
+  document.getElementById('reset').addEventListener('click',()=>{tiles=[...startTiles];moves=0;started=false;clearInterval(timerId);timerId=null;timeEl.textContent='0:00';messageEl.textContent='';render();});
+  shuffle();
+})();
+</script>
+</body>
+</html>
