@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b4d">
+<title>ごみ出し曜日メモ｜次の収集日をすぐ確認</title>
+<meta name="description" content="ごみの種類と曜日を登録すると、次の収集日までの日数を自動表示する無料ミニアプリ。登録不要・端末内保存。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--danger:#b64236;--shadow:0 16px 42px rgba(23,33,29,.10)}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 10% 0,rgba(214,146,59,.14),transparent 28rem),linear-gradient(180deg,var(--bg),#ebe8df);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;min-height:100vh}.wrap{width:min(760px,100%);margin:auto;padding:18px 16px 80px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.home{color:var(--accent);font-weight:800;text-decoration:none;padding:10px 13px;border:1px solid var(--line);border-radius:999px;background:#fff}.badge{font-size:12px;color:var(--accent);font-weight:800;letter-spacing:.08em}h1{font-family:Georgia,"Yu Mincho",serif;font-size:clamp(31px,8vw,48px);line-height:1.2;margin:30px 0 10px}.lead{color:var(--muted);line-height:1.8;margin:0 0 24px}.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-top:16px}.form{display:grid;grid-template-columns:1.4fr 1fr auto;gap:10px}.field label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:0 0 6px}.field input,.field select{width:100%;min-height:48px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:0 13px;font:inherit;color:var(--text)}button{border:0;border-radius:13px;background:var(--accent);color:#fff;font:inherit;font-weight:800;padding:0 18px;min-height:48px;cursor:pointer}.summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.summary strong{font-size:18px}.summary span{color:var(--muted);font-size:13px}.list{display:grid;gap:10px}.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.icon{width:44px;height:44px;border-radius:13px;background:rgba(23,107,77,.10);display:grid;place-items:center;font-size:22px}.name{font-weight:900}.meta{font-size:13px;color:var(--muted);margin-top:3px}.count{text-align:right;font-weight:900;color:var(--accent)}.count.today{color:var(--danger)}.count small{display:block;font-size:11px;color:var(--muted);font-weight:700}.delete{min-height:34px;padding:0 10px;background:transparent;color:var(--muted);border:1px solid var(--line);font-size:12px}.empty{text-align:center;padding:34px 12px;color:var(--muted);line-height:1.8}.tips{font-size:13px;color:var(--muted);line-height:1.8}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}@media(max-width:600px){.form{grid-template-columns:1fr 1fr}.form button{grid-column:1/-1}.item{grid-template-columns:auto 1fr}.count{grid-column:2;text-align:left}.delete{grid-column:1/-1}.panel{padding:15px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><span class="badge">LIFE TOOL</span><a class="home" href="../../">← ホームへ</a></div>
+<h1>ごみ出し曜日メモ</h1>
+<p class="lead">燃やすごみ・資源ごみなどの曜日を登録すると、次の収集日を近い順に表示します。データはこの端末だけに保存されます。</p>
+<section class="panel" aria-labelledby="addTitle">
+<div class="summary"><strong id="addTitle">収集日を登録</strong><span>何件でも追加できます</span></div>
+<form class="form" id="form">
+<div class="field"><label for="name">ごみの種類</label><input id="name" maxlength="20" placeholder="例：燃やすごみ" required></div>
+<div class="field"><label for="weekday">曜日</label><select id="weekday"><option value="0">日曜日</option><option value="1">月曜日</option><option value="2">火曜日</option><option value="3">水曜日</option><option value="4">木曜日</option><option value="5">金曜日</option><option value="6">土曜日</option></select></div>
+<button type="submit">追加する</button>
+</form>
+</section>
+<section class="panel">
+<div class="summary"><strong>次の収集日</strong><span id="updated"></span></div>
+<div class="list" id="list"></div>
+</section>
+<section class="panel tips"><strong>使い方のコツ</strong><br>同じ種類を週2回登録したい場合は、曜日ごとに2件登録してください。自治体の祝日変更や年末年始の特別日程は自動反映されないため、公式案内も確認してください。</section>
+<p class="footer">登録不要・通信不要・無料</p>
+</main>
+<script>
+const KEY='gomiDayItemsV1';
+const days=['日','月','火','水','木','金','土'];
+const icons=['🗑️','🔥','♻️','🥫','🧴','📦','🍂'];
+let items=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(items))}
+function nextInfo(w){const now=new Date();const today=now.getDay();const diff=(w-today+7)%7;const d=new Date(now);d.setDate(now.getDate()+diff);return{diff,date:d}}
+function esc(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function render(){const list=document.getElementById('list');document.getElementById('updated').textContent=new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric',weekday:'short'}).format(new Date())+' 現在';if(!items.length){list.innerHTML='<div class="empty">まだ登録がありません。<br>上のフォームから最初の収集日を追加してください。</div>';return}const sorted=[...items].sort((a,b)=>nextInfo(a.weekday).diff-nextInfo(b.weekday).diff);list.innerHTML=sorted.map((x,i)=>{const n=nextInfo(Number(x.weekday));const label=n.diff===0?'今日':n.diff===1?'明日':n.diff+'日後';const date=new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric'}).format(n.date);return `<article class="item"><div class="icon">${icons[i%icons.length]}</div><div><div class="name">${esc(x.name)}</div><div class="meta">毎週${days[x.weekday]}曜日・次回 ${date}</div></div><div class="count ${n.diff===0?'today':''}">${label}<small>忘れずに準備</small></div><button class="delete" data-id="${x.id}">削除</button></article>`}).join('')}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('name').value.trim();if(!name)return;items.push({id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(),name,weekday:Number(document.getElementById('weekday').value)});save();e.target.reset();render()});
+document.getElementById('list').addEventListener('click',e=>{const id=e.target.dataset.id;if(!id)return;items=items.filter(x=>x.id!==id);save();render()});
+render();
+</script>
+</body>
+</html>
