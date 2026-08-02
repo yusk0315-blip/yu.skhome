@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>駐車位置メモ｜停めた場所をすぐ記録</title>
+  <meta name="description" content="駐車場の階・区画・目印・現在地を端末内に保存できる無料ミニアプリ。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--danger:#b84040}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--text);background:linear-gradient(180deg,#f7f5ef,#ece9e1);min-height:100vh}
+    .wrap{width:min(680px,100%);margin:auto;padding:18px 16px 44px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--accent);text-decoration:none;font-weight:800}
+    .hero,.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 36px rgba(23,33,29,.08)}.hero{padding:22px;margin-bottom:14px}h1{font-size:clamp(26px,8vw,40px);margin:4px 0 10px;line-height:1.2}p{color:var(--muted);line-height:1.7;margin:0}.tag{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
+    .card{padding:18px;margin-top:14px}label{display:block;font-weight:800;margin:14px 0 7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}input,textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:14px;background:#fff;padding:13px 14px;color:var(--text)}textarea{min-height:92px;resize:vertical}input:focus,textarea:focus{outline:3px solid rgba(23,107,77,.16);border-color:var(--accent)}
+    button,.btn{min-height:48px;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--accent);color:#fff;width:100%;margin-top:16px}.secondary{background:#fff;color:var(--accent);border:1px solid var(--line)}.danger{background:#fff;color:var(--danger);border:1px solid rgba(184,64,64,.25)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .saved{display:none}.saved.show{display:block}.place{font-size:28px;font-weight:900;margin:6px 0}.meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chip{background:rgba(23,107,77,.08);color:var(--accent);border-radius:999px;padding:7px 10px;font-size:13px;font-weight:800}.note{white-space:pre-wrap;background:#f4f1e9;border-radius:14px;padding:13px;line-height:1.7}.status{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}.mapLink{width:100%;margin-top:10px}.empty{text-align:center;padding:12px 0;color:var(--muted)}
+    @media(max-width:480px){.grid,.actions{grid-template-columns:1fr}.wrap{padding-left:12px;padding-right:12px}.hero,.card{border-radius:18px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><strong>駐車位置メモ</strong><a class="home" href="../../">ホームへ戻る</a></div>
+  <section class="hero"><div class="tag">PARKING MEMO</div><h1>停めた場所を、忘れる前に。</h1><p>階・区画・目印を記録。現在地も保存でき、広い駐車場で車を探す時間を減らします。</p></section>
+  <section class="card">
+    <div class="grid"><div><label for="floor">階・エリア</label><input id="floor" placeholder="例：3階・屋上"></div><div><label for="spot">区画番号</label><input id="spot" placeholder="例：B-27"></div></div>
+    <label for="landmark">目印</label><input id="landmark" placeholder="例：青いエレベーター横">
+    <label for="note">メモ</label><textarea id="note" placeholder="入口、精算機、買い物カート置き場など"></textarea>
+    <button id="save" class="primary">この場所を保存</button>
+    <button id="geo" class="secondary mapLink">現在地も取得する</button>
+    <div id="geoStatus" class="status">位置情報は端末内だけで使用します。</div>
+  </section>
+  <section id="saved" class="card saved" aria-live="polite">
+    <div class="tag">SAVED LOCATION</div><div id="place" class="place"></div><div id="meta" class="meta"></div><div id="savedNote" class="note"></div>
+    <a id="map" class="btn secondary mapLink" target="_blank" rel="noreferrer" hidden>地図で開く</a>
+    <div class="actions"><button id="share" class="secondary">共有・コピー</button><button id="clear" class="danger">記録を消す</button></div>
+  </section>
+  <section id="empty" class="card empty">まだ駐車位置は保存されていません。</section>
+</main>
+<script>
+const KEY='parkingMemoV1'; let coords=null;
+const $=id=>document.getElementById(id), fields=['floor','spot','landmark','note'];
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function elapsed(ts){const m=Math.max(0,Math.floor((Date.now()-ts)/60000));if(m<1)return 'たった今';if(m<60)return `${m}分前`;const h=Math.floor(m/60),r=m%60;return r?`${h}時間${r}分前`:`${h}時間前`}
+function render(){const raw=localStorage.getItem(KEY);if(!raw){$('saved').classList.remove('show');$('empty').hidden=false;return}const d=JSON.parse(raw);$('empty').hidden=true;$('saved').classList.add('show');$('place').textContent=[d.floor,d.spot].filter(Boolean).join(' / ')||'駐車位置';$('meta').innerHTML=`<span class="chip">${esc(elapsed(d.savedAt))}</span>${d.landmark?`<span class="chip">目印：${esc(d.landmark)}</span>`:''}`;$('savedNote').textContent=d.note||'メモなし';if(d.lat&&d.lng){$('map').hidden=false;$('map').href=`https://www.google.com/maps?q=${d.lat},${d.lng}`}else{$('map').hidden=true}fields.forEach(k=>$(k).value=d[k]||'');coords=d.lat?{lat:d.lat,lng:d.lng}:null}
+$('geo').addEventListener('click',()=>{if(!navigator.geolocation){$('geoStatus').textContent='この端末では位置情報を利用できません。';return}$('geoStatus').textContent='現在地を取得しています…';navigator.geolocation.getCurrentPosition(p=>{coords={lat:p.coords.latitude,lng:p.coords.longitude};$('geoStatus').textContent='現在地を取得しました。保存ボタンを押してください。'},()=>{$('geoStatus').textContent='位置情報を取得できませんでした。端末の許可設定を確認してください。'}, {enableHighAccuracy:true,timeout:10000})});
+$('save').addEventListener('click',()=>{const d={};fields.forEach(k=>d[k]=$(k).value.trim());if(!d.floor&&!d.spot&&!d.landmark&&!d.note&&!coords){$('geoStatus').textContent='階・区画・目印・メモのどれかを入力してください。';return}d.savedAt=Date.now();if(coords)Object.assign(d,coords);localStorage.setItem(KEY,JSON.stringify(d));$('geoStatus').textContent='駐車位置を保存しました。';render();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})});
+$('share').addEventListener('click',async()=>{const d=JSON.parse(localStorage.getItem(KEY)||'{}');let text=`駐車位置：${[d.floor,d.spot].filter(Boolean).join(' / ')||'未入力'}\n目印：${d.landmark||'なし'}\nメモ：${d.note||'なし'}`;if(d.lat)text+=`\n地図：https://www.google.com/maps?q=${d.lat},${d.lng}`;try{if(navigator.share)await navigator.share({title:'駐車位置メモ',text});else{await navigator.clipboard.writeText(text);alert('駐車位置をコピーしました')}}catch(e){}});
+$('clear').addEventListener('click',()=>{if(confirm('保存した駐車位置を消しますか？')){localStorage.removeItem(KEY);coords=null;fields.forEach(k=>$(k).value='');render()}});
+render();setInterval(()=>{if(localStorage.getItem(KEY))render()},60000);
+</script>
+</body>
+</html>
