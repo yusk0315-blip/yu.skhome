@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b4d">
+<title>掃除ルーレット｜次にやる場所を10分で決める</title>
+<meta name="description" content="掃除する場所をルーレットで1つ決める、スマホ向け無料ミニアプリ。所要時間と場所を選び、迷わず10分だけ始められます。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--danger:#b84332;--shadow:0 18px 50px rgba(23,33,29,.10)}
+*{box-sizing:border-box}html{color-scheme:light}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.14),transparent 26rem),linear-gradient(180deg,var(--bg),#ebe8df)}
+button,input{font:inherit}.wrap{width:min(100%,680px);margin:auto;padding:18px 16px calc(48px + env(safe-area-inset-bottom))}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--accent);font-weight:800;text-decoration:none;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.75)}.badge{font-size:12px;color:var(--muted)}
+.hero,.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}.hero{padding:24px}.kicker{font-size:11px;letter-spacing:.18em;color:var(--accent);font-weight:900}.hero h1{font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,9vw,44px);line-height:1.2;margin:10px 0}.hero p{color:var(--muted);line-height:1.8;margin:0}
+.panel{padding:18px;margin-top:14px}.label{font-size:13px;font-weight:900;margin-bottom:10px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;color:var(--text);font-weight:700;min-height:44px}.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.result{min-height:210px;display:grid;place-items:center;text-align:center;padding:22px}.resultIcon{font-size:48px}.result small{display:block;color:var(--muted);letter-spacing:.12em;font-weight:800}.result h2{font-family:Georgia,"Yu Mincho",serif;font-size:34px;margin:8px 0}.result p{margin:0;color:var(--muted);line-height:1.7}.result.spinning{animation:pulse .22s ease-in-out infinite alternate}@keyframes pulse{to{transform:scale(.985);opacity:.75}}
+.primary{width:100%;min-height:56px;border:0;border-radius:18px;background:var(--accent);color:#fff;font-weight:900;font-size:17px;box-shadow:0 10px 22px rgba(23,107,77,.22)}.primary:active{transform:translateY(1px)}.secondary{width:100%;min-height:48px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--text);font-weight:800;margin-top:9px}.timer{display:none;margin-top:14px;padding:16px;border-radius:18px;background:rgba(23,107,77,.07);text-align:center}.timer.show{display:block}.clock{font-variant-numeric:tabular-nums;font-size:42px;font-weight:900;letter-spacing:.04em}.timerActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.timerActions button{min-height:44px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800}.timerActions .stop{color:var(--danger)}
+.custom{display:grid;grid-template-columns:1fr auto;gap:8px}.custom input{min-width:0;min-height:48px;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:#fff}.custom button{border:0;border-radius:14px;padding:0 16px;background:var(--accent2);color:#fff;font-weight:900}.list{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.item{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);padding:7px 8px 7px 11px;border-radius:999px;font-size:13px}.item button{border:0;background:transparent;color:var(--muted);font-size:17px;line-height:1;padding:0 3px}.note{font-size:12px;color:var(--muted);line-height:1.7;margin:12px 2px 0}.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#17211d;color:#fff;padding:11px 16px;border-radius:999px;font-size:13px;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:420px){.hero{padding:20px}.panel{padding:15px}.result h2{font-size:29px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="home" href="../../">← ホームへ</a><span class="badge">登録・通信不要</span></div>
+  <section class="hero">
+    <div class="kicker">10 MINUTE CLEANING</div>
+    <h1>掃除ルーレット</h1>
+    <p>場所を選ぶ時間をゼロに。条件を決めて回したら、出た場所を短時間だけ片づけます。</p>
+  </section>
+  <section class="panel" aria-labelledby="timeLabel"><div class="label" id="timeLabel">① 何分だけやる？</div><div class="chips" id="timeChips"><button class="chip" data-min="5">5分</button><button class="chip active" data-min="10">10分</button><button class="chip" data-min="15">15分</button><button class="chip" data-min="20">20分</button></div></section>
+  <section class="panel" aria-labelledby="areaLabel"><div class="label" id="areaLabel">② 対象エリア</div><div class="chips" id="areaChips"><button class="chip active" data-area="all">全部</button><button class="chip" data-area="living">リビング</button><button class="chip" data-area="water">水回り</button><button class="chip" data-area="other">その他</button></div></section>
+  <section class="panel result" id="result" aria-live="polite"><div><div class="resultIcon" id="resultIcon">🧹</div><small id="resultSmall">READY</small><h2 id="resultTitle">回して決める</h2><p id="resultText">考えずに、出た場所を選んだ時間だけ。</p></div></section>
+  <section class="panel"><button class="primary" id="spinBtn">ルーレットを回す</button><button class="secondary" id="startBtn" disabled>この場所でタイマー開始</button><div class="timer" id="timer"><div class="clock" id="clock">10:00</div><div id="timerLabel">掃除中</div><div class="timerActions"><button id="pauseBtn">一時停止</button><button class="stop" id="resetBtn">終了</button></div></div></section>
+  <section class="panel"><div class="label">自分の掃除場所を追加</div><div class="custom"><input id="customInput" maxlength="18" placeholder="例：子どものおもちゃ箱"><button id="addBtn">追加</button></div><div class="list" id="customList"></div><p class="note">追加した場所はこの端末に保存され、「全部」のルーレットに入ります。</p></section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+'use strict';
+const defaults=[{name:'テーブルの上',area:'living',icon:'🪑',tip:'物を戻して、最後にサッと拭く'},{name:'ソファまわり',area:'living',icon:'🛋️',tip:'隙間と床のゴミを集める'},{name:'テレビ台',area:'living',icon:'📺',tip:'ホコリを取り、置き物を整える'},{name:'リビング床',area:'living',icon:'🧹',tip:'見える範囲だけ掃除機かモップ'},{name:'キッチン台',area:'water',icon:'🍳',tip:'出ている物を戻して水拭き'},{name:'シンク',area:'water',icon:'🚰',tip:'食器を片づけ、排水口まで流す'},{name:'洗面台',area:'water',icon:'🪥',tip:'鏡・ボウル・蛇口を拭く'},{name:'トイレ',area:'water',icon:'🚽',tip:'便器と床を短時間でリセット'},{name:'玄関',area:'other',icon:'👟',tip:'靴を揃え、砂とホコリを取る'},{name:'冷蔵庫の表面',area:'other',icon:'🧊',tip:'扉と取っ手を拭く'},{name:'机・作業スペース',area:'other',icon:'💻',tip:'不要な紙と物を定位置へ'},{name:'ゴミ箱まわり',area:'other',icon:'🗑️',tip:'袋交換と周辺の拭き掃除'}];
+const $=s=>document.querySelector(s);let minutes=10,area='all',selected=null,interval=null,remaining=600,paused=false;let custom=loadCustom();const result=$('#result'),title=$('#resultTitle'),text=$('#resultText'),icon=$('#resultIcon'),small=$('#resultSmall');
+function loadCustom(){try{return JSON.parse(localStorage.getItem('cleaningRouletteCustom')||'[]').filter(x=>typeof x==='string').slice(0,20)}catch{return[]}}
+function saveCustom(){localStorage.setItem('cleaningRouletteCustom',JSON.stringify(custom));renderCustom()}
+function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._id);t._id=setTimeout(()=>t.classList.remove('show'),1800)}
+function renderCustom(){const list=$('#customList');list.innerHTML='';custom.forEach((name,i)=>{const el=document.createElement('span');el.className='item';const label=document.createElement('span');label.textContent=name;const del=document.createElement('button');del.type='button';del.setAttribute('aria-label',name+'を削除');del.textContent='×';del.onclick=()=>{custom.splice(i,1);saveCustom()};el.append(label,del);list.append(el)})}
+function pool(){const base=area==='all'?defaults:defaults.filter(x=>x.area===area);return base.concat(area==='all'?custom.map(name=>({name,area:'custom',icon:'✨',tip:'決めた範囲だけ整える'})):[])}
+function setChoice(item){selected=item;icon.textContent=item.icon;small.textContent=minutes+' MINUTES';title.textContent=item.name;text.textContent=item.tip;$('#startBtn').disabled=false;remaining=minutes*60;updateClock()}
+function spin(){if(interval){showToast('タイマーを終了してから回してください');return}const items=pool();if(!items.length)return;$('#spinBtn').disabled=true;result.classList.add('spinning');let count=0;const max=16+Math.floor(Math.random()*7);const roll=setInterval(()=>{setChoice(items[Math.floor(Math.random()*items.length)]);count++;if(count>=max){clearInterval(roll);result.classList.remove('spinning');$('#spinBtn').disabled=false;if(navigator.vibrate)navigator.vibrate([40,40,70])}},75)}
+function updateClock(){const m=Math.floor(remaining/60),s=remaining%60;$('#clock').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function startTimer(){if(!selected)return;clearInterval(interval);remaining=minutes*60;paused=false;$('#pauseBtn').textContent='一時停止';$('#timer').classList.add('show');$('#timerLabel').textContent=selected.name+'を掃除中';updateClock();interval=setInterval(tick,1000);window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+function tick(){if(paused)return;remaining--;updateClock();if(remaining<=0){clearInterval(interval);interval=null;remaining=0;updateClock();$('#timerLabel').textContent='完了！ここで終わってOK';if(navigator.vibrate)navigator.vibrate([150,80,150]);showToast('掃除完了！')}}
+function resetTimer(){clearInterval(interval);interval=null;paused=false;remaining=minutes*60;$('#timer').classList.remove('show');updateClock()}
+$('#timeChips').addEventListener('click',e=>{const b=e.target.closest('[data-min]');if(!b||interval)return;document.querySelectorAll('[data-min]').forEach(x=>x.classList.remove('active'));b.classList.add('active');minutes=Number(b.dataset.min);remaining=minutes*60;if(selected)setChoice(selected);updateClock()});
+$('#areaChips').addEventListener('click',e=>{const b=e.target.closest('[data-area]');if(!b||interval)return;document.querySelectorAll('[data-area]').forEach(x=>x.classList.remove('active'));b.classList.add('active');area=b.dataset.area;selected=null;icon.textContent='🧹';small.textContent='READY';title.textContent='回して決める';text.textContent='考えずに、出た場所を選んだ時間だけ。';$('#startBtn').disabled=true});
+$('#spinBtn').addEventListener('click',spin);$('#startBtn').addEventListener('click',startTimer);$('#pauseBtn').addEventListener('click',()=>{if(!interval)return;paused=!paused;$('#pauseBtn').textContent=paused?'再開':'一時停止';$('#timerLabel').textContent=paused?'一時停止中':selected.name+'を掃除中'});$('#resetBtn').addEventListener('click',resetTimer);
+function addCustom(){const input=$('#customInput'),name=input.value.trim();if(!name)return;if(custom.includes(name)){showToast('すでに追加されています');return}if(custom.length>=20){showToast('追加は20件までです');return}custom.push(name);input.value='';saveCustom();showToast('ルーレットに追加しました')}
+$('#addBtn').addEventListener('click',addCustom);$('#customInput').addEventListener('keydown',e=>{if(e.key==='Enter')addCustom()});renderCustom();updateClock();
+})();
+</script>
+</body>
+</html>
