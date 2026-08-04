@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>チーム分けシャッフル</title>
+<meta name="description" content="名前を入力するだけで、人数差を抑えてランダムにチーム分けできる無料アプリ。">
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#18212f;--muted:#667085;--line:#dbe2ea;--accent:#635bff;--accent2:#00a67e;--danger:#d92d20}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:linear-gradient(180deg,#eef2ff,var(--bg));color:var(--text)}main{max-width:760px;margin:auto;padding:18px 16px 80px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--accent);text-decoration:none;font-weight:700}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 12px 32px rgba(24,33,47,.08);margin-bottom:14px}h1{font-size:clamp(26px,7vw,38px);margin:4px 0 8px}p{color:var(--muted);line-height:1.7;margin:0}.label{display:block;font-weight:800;margin:0 0 8px}textarea,input,select{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;background:#fff}textarea{min-height:180px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}button{min-height:50px;border:0;border-radius:14px;font:inherit;font-weight:800;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef0ff;color:var(--accent)}.ghost{background:#f2f4f7;color:var(--text)}.status{margin-top:10px;font-size:14px;color:var(--muted)}.teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.team{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fcfcff}.team h2{font-size:17px;margin:0 0 10px;color:var(--accent)}ol{margin:0;padding-left:24px;line-height:1.9}.hidden{display:none}.notice{font-size:13px;color:var(--muted);margin-top:12px}@media(max-width:560px){.row,.buttons,.teams{grid-template-columns:1fr}.top{align-items:flex-start}.card{padding:16px;border-radius:18px}textarea{min-height:150px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><strong>便利ツール</strong><a class="home" href="../../">← ホームへ</a></div>
+  <section class="card">
+    <h1>チーム分けシャッフル</h1>
+    <p>参加者名を1行ずつ入力すると、人数差が出にくいようランダムにチーム分けします。</p>
+  </section>
+  <section class="card">
+    <label class="label" for="names">参加者</label>
+    <textarea id="names" placeholder="ゆうき&#10;あかり&#10;けんた&#10;みさき"></textarea>
+    <div class="row">
+      <label><span class="label">チーム数</span><input id="count" type="number" min="2" max="12" value="2" inputmode="numeric"></label>
+      <label><span class="label">チーム名</span><select id="style"><option value="number">チーム1・2</option><option value="color">赤・青・緑…</option><option value="letter">A・B・C…</option></select></label>
+    </div>
+    <div class="buttons"><button class="primary" id="shuffle">チーム分けする</button><button class="ghost" id="sample">例を入力</button></div>
+    <div class="status" id="status">2人以上を入力してください。</div>
+  </section>
+  <section class="card hidden" id="resultBox">
+    <div class="top"><strong>結果</strong><button class="secondary" id="copy">結果をコピー</button></div>
+    <div class="teams" id="teams"></div>
+    <p class="notice">同じメンバーでも、もう一度押すたびに組み合わせが変わります。</p>
+  </section>
+</main>
+<script>
+const namesEl=document.getElementById('names'),countEl=document.getElementById('count'),styleEl=document.getElementById('style'),statusEl=document.getElementById('status'),teamsEl=document.getElementById('teams'),resultBox=document.getElementById('resultBox');
+const labels={color:['赤','青','緑','黄','紫','橙','水色','桃','白','黒','金','銀']};let latest=[];
+function parseNames(){return [...new Set(namesEl.value.split(/\n|,/).map(v=>v.trim()).filter(Boolean))]}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function teamName(i){if(styleEl.value==='letter')return `チーム${String.fromCharCode(65+i)}`;if(styleEl.value==='color')return `${labels.color[i]||i+1}チーム`;return `チーム${i+1}`}
+function build(){const names=parseNames();let n=Math.max(2,Math.min(12,Number(countEl.value)||2));countEl.value=n;if(names.length<2){statusEl.textContent='参加者を2人以上入力してください。';resultBox.classList.add('hidden');return}if(n>names.length)n=names.length;const groups=Array.from({length:n},()=>[]);shuffle([...names]).forEach((name,i)=>groups[i%n].push(name));latest=groups;teamsEl.innerHTML=groups.map((g,i)=>`<section class="team"><h2>${teamName(i)}（${g.length}人）</h2><ol>${g.map(v=>`<li>${v.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}</li>`).join('')}</ol></section>`).join('');statusEl.textContent=`${names.length}人を${n}チームに分けました。`;resultBox.classList.remove('hidden');localStorage.setItem('team-shuffle-names',namesEl.value);localStorage.setItem('team-shuffle-count',String(n));resultBox.scrollIntoView({behavior:'smooth',block:'start'})}
+document.getElementById('shuffle').addEventListener('click',build);document.getElementById('sample').addEventListener('click',()=>{namesEl.value='ゆうき\nあかり\nけんた\nみさき\nそうた\nえみ\nりく\nなお';statusEl.textContent='例を入力しました。'});document.getElementById('copy').addEventListener('click',async()=>{const text=latest.map((g,i)=>`${teamName(i)}\n${g.map(v=>'・'+v).join('\n')}`).join('\n\n');try{await navigator.clipboard.writeText(text);statusEl.textContent='結果をコピーしました。'}catch{statusEl.textContent='コピーできませんでした。長押しで選択してください。'}});namesEl.value=localStorage.getItem('team-shuffle-names')||'';countEl.value=localStorage.getItem('team-shuffle-count')||'2';
+</script>
+</body>
+</html>
