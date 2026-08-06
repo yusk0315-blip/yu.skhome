@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>洗濯表示早見表</title>
+<meta name="description" content="衣類タグの洗濯表示をカテゴリ別にすばやく確認できる無料ミニアプリ。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--soft:#e7f1ec;--warn:#fff2dc}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--text);background:linear-gradient(180deg,#f8f6f0,#ece9e1);min-height:100vh}.wrap{max-width:760px;margin:auto;padding:18px 16px 64px}header{display:flex;justify-content:space-between;align-items:center;gap:12px}.home{color:var(--accent);text-decoration:none;font-weight:800}.hero{margin:20px 0;padding:24px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 16px 40px rgba(23,33,29,.08)}h1{font-size:clamp(28px,8vw,42px);margin:0 0 10px;font-family:Georgia,"Yu Mincho",serif}.lead{margin:0;color:var(--muted);line-height:1.8}.search{width:100%;margin-top:18px;min-height:52px;border:1px solid var(--line);border-radius:16px;padding:0 16px;font:inherit;background:#fff}.tabs{display:flex;gap:8px;overflow:auto;padding:2px 0 12px;scrollbar-width:none}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font:inherit;font-weight:700}.tab.active{background:var(--accent);color:#fff}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:15px;text-align:left;min-height:160px;box-shadow:0 8px 24px rgba(23,33,29,.05)}.symbol{display:grid;place-items:center;width:64px;height:54px;margin-bottom:10px;border:2px solid var(--text);border-radius:10px;font-size:25px;font-weight:900;background:#fff}.card h2{font-size:15px;margin:0 0 6px}.card p{font-size:13px;color:var(--muted);line-height:1.55;margin:0}.detail{position:fixed;inset:0;background:rgba(20,28,24,.5);display:none;align-items:flex-end;z-index:5}.detail.open{display:flex}.sheet{width:100%;max-width:760px;margin:auto;background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));max-height:78vh;overflow:auto}.sheet .symbol{width:86px;height:70px;font-size:32px}.close{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--accent);color:white;font:inherit;font-weight:800;margin-top:18px}.note{margin-top:18px;padding:14px;border-radius:16px;background:var(--warn);font-size:13px;line-height:1.7}.empty{text-align:center;color:var(--muted);padding:40px 10px;grid-column:1/-1}@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style></head>
+<body><div class="wrap"><header><strong>くらしミニアプリ</strong><a class="home" href="../../">ホームへ戻る</a></header>
+<section class="hero"><h1>洗濯表示早見表</h1><p class="lead">衣類タグの意味を、カテゴリや言葉からすぐ確認。カードをタップすると詳しい扱い方が開きます。</p><input id="q" class="search" type="search" placeholder="例：乾燥機、漂白、アイロン" aria-label="洗濯表示を検索"></section>
+<nav id="tabs" class="tabs" aria-label="カテゴリ"></nav><main id="grid" class="grid"></main>
+<p class="note">表示は家庭での目安です。実際の衣類では、タグに記載された温度・線・点・禁止マークまで確認してください。</p></div>
+<div id="detail" class="detail" role="dialog" aria-modal="true"><div class="sheet"><div id="detailBody"></div><button id="close" class="close">閉じる</button></div></div>
+<script>
+const items=[
+{c:'洗濯',s:'40',t:'液温40℃まで・通常洗濯',d:'洗濯機で通常の強さで洗えます。数字は使用できる最高温度です。',k:'水洗い 洗濯機 温度'},
+{c:'洗濯',s:'40―',t:'液温40℃まで・弱い洗濯',d:'洗濯機の弱水流やおしゃれ着コースを使います。',k:'弱水流 おしゃれ着'},
+{c:'洗濯',s:'手',t:'手洗い',d:'液温40℃を限度に、やさしく押し洗いします。',k:'手洗い デリケート'},
+{c:'洗濯',s:'×',t:'家庭での洗濯禁止',d:'家庭では水洗いできません。クリーニング店へ相談します。',k:'水洗い禁止'},
+{c:'漂白',s:'△',t:'塩素系・酸素系漂白剤OK',d:'塩素系と酸素系、どちらの漂白剤も使用できます。',k:'漂白剤 塩素 酸素'},
+{c:'漂白',s:'△斜',t:'酸素系漂白剤のみOK',d:'酸素系漂白剤は使えますが、塩素系漂白剤は使えません。',k:'酸素系のみ'},
+{c:'漂白',s:'△×',t:'漂白剤禁止',d:'塩素系・酸素系ともに漂白剤は使用できません。',k:'漂白禁止'},
+{c:'乾燥',s:'□｜',t:'つり干し',d:'脱水後、ハンガーなどにつるして乾かします。',k:'干し方 ハンガー'},
+{c:'乾燥',s:'□―',t:'平干し',d:'型崩れを防ぐため、平らな場所や平干しネットで乾かします。',k:'ニット 平ら'},
+{c:'乾燥',s:'○・・',t:'タンブル乾燥80℃まで',d:'家庭用乾燥機を高温設定まで使用できます。',k:'乾燥機 高温'},
+{c:'乾燥',s:'○・',t:'タンブル乾燥60℃まで',d:'家庭用乾燥機は低温設定で使用します。',k:'乾燥機 低温'},
+{c:'乾燥',s:'○×',t:'タンブル乾燥禁止',d:'衣類乾燥機は使わず、自然乾燥します。',k:'乾燥機禁止'},
+{c:'アイロン',s:'♨•••',t:'アイロン200℃まで',d:'底面温度200℃を限度にアイロン仕上げできます。',k:'高温 アイロン'},
+{c:'アイロン',s:'♨••',t:'アイロン150℃まで',d:'底面温度150℃を限度に使用します。',k:'中温 アイロン'},
+{c:'アイロン',s:'♨•',t:'アイロン110℃まで・スチームなし',d:'低温で使用し、スチームは避けます。',k:'低温 スチーム禁止'},
+{c:'アイロン',s:'♨×',t:'アイロン禁止',d:'アイロン仕上げはできません。',k:'アイロン禁止'},
+{c:'クリーニング',s:'P',t:'ドライクリーニング可',d:'パークロロエチレンなどを使う専門のドライクリーニングが可能です。',k:'ドライ'},
+{c:'クリーニング',s:'W',t:'ウェットクリーニング可',d:'クリーニング店による専門的な水洗いが可能です。',k:'ウェット'},
+{c:'クリーニング',s:'○×',t:'ドライクリーニング禁止',d:'ドライクリーニングはできません。別の洗い方を確認します。',k:'ドライ禁止'}];
+const cats=['すべて',...new Set(items.map(x=>x.c))];let cat='すべて';
+const tabs=document.getElementById('tabs'),grid=document.getElementById('grid'),q=document.getElementById('q'),detail=document.getElementById('detail'),body=document.getElementById('detailBody');
+function drawTabs(){tabs.innerHTML=cats.map(x=>`<button class="tab ${x===cat?'active':''}" data-c="${x}">${x}</button>`).join('');tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;drawTabs();draw()})}
+function draw(){const word=q.value.trim().toLowerCase();const list=items.filter(x=>(cat==='すべて'||x.c===cat)&&(!word||(`${x.t} ${x.d} ${x.k}`).toLowerCase().includes(word)));grid.innerHTML=list.length?list.map((x,i)=>`<button class="card" data-i="${items.indexOf(x)}"><span class="symbol">${x.s}</span><h2>${x.t}</h2><p>${x.d}</p></button>`).join(''):'<p class="empty">該当する表示がありません</p>';grid.querySelectorAll('.card').forEach(b=>b.onclick=()=>openItem(items[+b.dataset.i]))}
+function openItem(x){body.innerHTML=`<span class="symbol">${x.s}</span><small>${x.c}</small><h2>${x.t}</h2><p style="line-height:1.8;color:var(--muted)">${x.d}</p>`;detail.classList.add('open')}
+q.oninput=draw;document.getElementById('close').onclick=()=>detail.classList.remove('open');detail.onclick=e=>{if(e.target===detail)detail.classList.remove('open')};drawTabs();draw();
+</script></body></html>
