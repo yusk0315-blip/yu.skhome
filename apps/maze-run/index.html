@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>迷路タイムアタック</title>
+<meta name="description" content="毎回変わる迷路を、スワイプや矢印ボタンでゴールまで進む短時間ブラウザゲーム。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--gold:#d6923b;--wall:#25322c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.15),transparent 28rem),linear-gradient(180deg,var(--bg),#ece8df)}
+a{color:inherit}.wrap{width:min(680px,100%);margin:auto;padding:18px 16px calc(30px + env(safe-area-inset-bottom))}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.home{text-decoration:none;font-size:14px;font-weight:800;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:#fff}.tag{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--accent)}
+h1{font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,8vw,44px);line-height:1.15;margin:6px 0 10px}.lead{margin:0 0 18px;color:var(--muted);line-height:1.75;font-size:14px}.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 44px rgba(23,33,29,.09);padding:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.stat{background:#f5f1e8;border-radius:14px;padding:10px;text-align:center}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}.boardWrap{position:relative;width:100%;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#fff;touch-action:none}canvas{display:block;width:100%;height:100%}.flash{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,254,250,.88);padding:20px;text-align:center}.flash.show{display:grid}.flashBox{max-width:300px}.flash h2{font-size:28px;margin:0 0 8px}.flash p{margin:0 0 16px;color:var(--muted);line-height:1.6}.buttons{display:grid;grid-template-columns:repeat(3,64px);justify-content:center;gap:8px;margin:14px auto 4px}.move,.empty{height:56px;border-radius:16px}.move{border:1px solid var(--line);background:#fff;font-size:24px;font-weight:900;box-shadow:0 5px 12px rgba(23,33,29,.06)}.move:active{transform:scale(.96);background:#f0eee7}.empty{visibility:hidden}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.btn{min-height:48px;border:0;border-radius:999px;font:inherit;font-weight:900}.primary{background:var(--accent);color:#fff}.secondary{background:#fff;border:1px solid var(--line)}.difficulty{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}.chip{flex:1;min-width:90px;min-height:42px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:800}.chip.active{background:#e3efe9;border-color:rgba(23,107,77,.35);color:var(--accent)}.hint{text-align:center;color:var(--muted);font-size:12px;line-height:1.6;margin:12px 0 0}@media(max-width:420px){.wrap{padding-left:12px;padding-right:12px}.panel{padding:10px}.buttons{grid-template-columns:repeat(3,58px)}.move,.empty{height:52px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="home" href="../../">← ホーム</a><span class="tag">BROWSER GAME</span></div>
+  <h1>迷路タイムアタック</h1>
+  <p class="lead">毎回変わる迷路をゴールまで。スワイプか矢印ボタンで進み、最短タイムを狙おう。</p>
+  <section class="panel">
+    <div class="stats">
+      <div class="stat"><b id="time">0.0</b><span>秒</span></div>
+      <div class="stat"><b id="steps">0</b><span>歩</span></div>
+      <div class="stat"><b id="best">--</b><span>ベスト</span></div>
+    </div>
+    <div class="boardWrap" id="boardWrap">
+      <canvas id="maze" aria-label="迷路"></canvas>
+      <div class="flash" id="flash"><div class="flashBox"><h2>ゴール！</h2><p id="result"></p><button class="btn primary" id="again">もう一度</button></div></div>
+    </div>
+    <div class="buttons" aria-label="移動ボタン">
+      <div class="empty"></div><button class="move" data-dir="up" aria-label="上">↑</button><div class="empty"></div>
+      <button class="move" data-dir="left" aria-label="左">←</button><button class="move" data-dir="down" aria-label="下">↓</button><button class="move" data-dir="right" aria-label="右">→</button>
+    </div>
+    <div class="controls"><button class="btn primary" id="newMaze">新しい迷路</button><button class="btn secondary" id="reset">最初から</button></div>
+    <div class="difficulty" aria-label="難易度">
+      <button class="chip active" data-size="9">やさしい</button><button class="chip" data-size="13">ふつう</button><button class="chip" data-size="17">むずかしい</button>
+    </div>
+    <p class="hint">緑のスタートから金色のゴールへ。キーボードの矢印キーでも遊べます。</p>
+  </section>
+</main>
+<script>
+(() => {
+  const canvas=document.getElementById('maze'),ctx=canvas.getContext('2d');
+  const wrap=document.getElementById('boardWrap');
+  const timeEl=document.getElementById('time'),stepsEl=document.getElementById('steps'),bestEl=document.getElementById('best');
+  const flash=document.getElementById('flash'),result=document.getElementById('result');
+  let size=9,grid=[],player={x:0,y:0},steps=0,startAt=0,timer=null,playing=false,touchStart=null;
+  const dirs={up:[0,-1,0,2],right:[1,0,1,3],down:[0,1,2,0],left:[-1,0,3,1]};
+  function bestKey(){return `maze-run-best-${size}`}
+  function loadBest(){const v=localStorage.getItem(bestKey());bestEl.textContent=v?Number(v).toFixed(1):'--'}
+  function generate(){
+    grid=Array.from({length:size},(_,y)=>Array.from({length:size},(_,x)=>({x,y,w:[1,1,1,1],seen:false})));
+    const stack=[grid[0][0]];grid[0][0].seen=true;
+    while(stack.length){
+      const c=stack[stack.length-1],opts=[];
+      [[0,-1,0,2],[1,0,1,3],[0,1,2,0],[-1,0,3,1]].forEach(d=>{const nx=c.x+d[0],ny=c.y+d[1];if(nx>=0&&ny>=0&&nx<size&&ny<size&&!grid[ny][nx].seen)opts.push(d)});
+      if(!opts.length){stack.pop();continue}
+      const d=opts[Math.floor(Math.random()*opts.length)],n=grid[c.y+d[1]][c.x+d[0]];c.w[d[2]]=0;n.w[d[3]]=0;n.seen=true;stack.push(n);
+    }
+    grid.flat().forEach(c=>delete c.seen);restart();
+  }
+  function restart(){player={x:0,y:0};steps=0;stepsEl.textContent='0';timeEl.textContent='0.0';flash.classList.remove('show');playing=false;clearInterval(timer);loadBest();draw()}
+  function begin(){if(playing)return;playing=true;startAt=performance.now();timer=setInterval(updateTime,50)}
+  function elapsed(){return (performance.now()-startAt)/1000}
+  function updateTime(){if(playing)timeEl.textContent=elapsed().toFixed(1)}
+  function move(name){
+    if(flash.classList.contains('show'))return;const d=dirs[name],c=grid[player.y][player.x];if(!d||c.w[d[2]])return;
+    begin();player.x+=d[0];player.y+=d[1];steps++;stepsEl.textContent=steps;draw();
+    if(player.x===size-1&&player.y===size-1)finish();
+  }
+  function finish(){playing=false;clearInterval(timer);const t=elapsed();timeEl.textContent=t.toFixed(1);const old=Number(localStorage.getItem(bestKey()))||Infinity;const isBest=t<old;if(isBest)localStorage.setItem(bestKey(),String(t));loadBest();result.textContent=`${t.toFixed(1)}秒・${steps}歩${isBest?'　🏆 ベスト更新！':''}`;flash.classList.add('show')}
+  function resize(){const dpr=Math.min(devicePixelRatio||1,2),s=Math.floor(wrap.clientWidth*dpr);if(canvas.width!==s){canvas.width=s;canvas.height=s}draw()}
+  function draw(){
+    if(!grid.length)return;const w=canvas.width,h=canvas.height,cell=w/size;ctx.clearRect(0,0,w,h);ctx.fillStyle='#fffefa';ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#dff0e8';ctx.fillRect(0,0,cell,cell);ctx.fillStyle='#f3dfbd';ctx.fillRect((size-1)*cell,(size-1)*cell,cell,cell);
+    ctx.strokeStyle='#25322c';ctx.lineWidth=Math.max(2,w/230);ctx.lineCap='square';ctx.beginPath();
+    for(let y=0;y<size;y++)for(let x=0;x<size;x++){const c=grid[y][x],x0=x*cell,y0=y*cell,x1=x0+cell,y1=y0+cell;if(c.w[0]){ctx.moveTo(x0,y0);ctx.lineTo(x1,y0)}if(c.w[1]){ctx.moveTo(x1,y0);ctx.lineTo(x1,y1)}if(c.w[2]){ctx.moveTo(x1,y1);ctx.lineTo(x0,y1)}if(c.w[3]){ctx.moveTo(x0,y1);ctx.lineTo(x0,y0)}}ctx.stroke();
+    ctx.fillStyle='#176b4d';ctx.beginPath();ctx.arc((player.x+.5)*cell,(player.y+.5)*cell,cell*.24,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#d6923b';ctx.beginPath();ctx.arc((size-.5)*cell,(size-.5)*cell,cell*.14,0,Math.PI*2);ctx.fill();
+  }
+  document.querySelectorAll('.move').forEach(b=>b.addEventListener('click',()=>move(b.dataset.dir)));
+  document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');size=Number(b.dataset.size);generate()}));
+  document.getElementById('newMaze').addEventListener('click',generate);document.getElementById('reset').addEventListener('click',restart);document.getElementById('again').addEventListener('click',generate);
+  addEventListener('keydown',e=>{const m={ArrowUp:'up',ArrowRight:'right',ArrowDown:'down',ArrowLeft:'left'}[e.key];if(m){e.preventDefault();move(m)}});
+  wrap.addEventListener('pointerdown',e=>{touchStart={x:e.clientX,y:e.clientY}});wrap.addEventListener('pointerup',e=>{if(!touchStart)return;const dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;touchStart=null;if(Math.max(Math.abs(dx),Math.abs(dy))<18)return;move(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'))});
+  new ResizeObserver(resize).observe(wrap);generate();resize();
+})();
+</script>
+</body>
+</html>
