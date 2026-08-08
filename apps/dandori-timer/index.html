@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#173d31">
+  <title>段取りタイマー｜会議・プレゼンの時間配分</title>
+  <meta name="description" content="会議やプレゼンの項目ごとに持ち時間を決め、残り時間と進行状況を見ながら進められる無料タイマー。">
+  <style>
+    :root{--bg:#f4f1e9;--card:#fffdf7;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--accent:#176b4d;--accent2:#d6923b;--danger:#b6473d;--shadow:0 16px 42px rgba(23,33,29,.09)}
+    *{box-sizing:border-box} html{background:var(--bg)} body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);background:linear-gradient(180deg,#f8f6f0,var(--bg));min-height:100vh}
+    button,input{font:inherit} button{touch-action:manipulation}.wrap{width:min(760px,100%);margin:auto;padding:16px 14px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.home{color:var(--accent);text-decoration:none;font-weight:800;font-size:14px}.badge{font-size:12px;color:var(--accent);background:rgba(23,107,77,.09);padding:7px 10px;border-radius:999px}
+    .hero{background:#173d31;color:#fff;border-radius:24px;padding:24px 20px;box-shadow:var(--shadow)}.eyebrow{font-size:11px;letter-spacing:.18em;color:#e4b767;font-weight:900}.hero h1{font-family:Georgia,"Yu Mincho",serif;margin:10px 0 8px;font-size:clamp(28px,8vw,40px)}.hero p{margin:0;color:rgba(255,255,255,.76);line-height:1.75;font-size:14px}
+    .timerCard,.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px;box-shadow:0 9px 28px rgba(23,33,29,.055)}.phase{font-weight:900;text-align:center;color:var(--accent);min-height:24px}.clock{font:700 clamp(58px,18vw,94px)/1 Georgia,serif;text-align:center;letter-spacing:-.04em;margin:12px 0 6px;font-variant-numeric:tabular-nums}.clock.over{color:var(--danger)}.subtime{text-align:center;color:var(--muted);font-size:13px}.progress{height:9px;background:#e7ebe7;border-radius:99px;overflow:hidden;margin:16px 0 4px}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#79a995);border-radius:inherit;transition:width .25s linear}.controls{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:9px;margin-top:15px}.btn{border:0;border-radius:14px;min-height:50px;padding:10px 12px;font-weight:900;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#edf1ed;color:var(--text)}.warn{background:#f5eadc;color:#76501b}.btn:disabled{opacity:.45;cursor:not-allowed}
+    .panelHead{display:flex;justify-content:space-between;align-items:center;gap:12px}.panel h2{margin:0;font:700 21px/1.4 Georgia,"Yu Mincho",serif}.total{font-weight:900;color:var(--accent)}.presets{display:flex;gap:8px;overflow:auto;padding:12px 0 4px}.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;font-weight:800;color:var(--muted)}
+    .list{display:grid;gap:9px;margin-top:12px}.row{display:grid;grid-template-columns:auto 1fr 88px auto;gap:8px;align-items:center;padding:10px;background:#fff;border:1px solid var(--line);border-radius:16px}.num{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:rgba(23,107,77,.09);color:var(--accent);font-weight:900;font-size:12px}.row.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(23,107,77,.09)}.row.done{opacity:.6}.row input{width:100%;min-width:0;border:1px solid #dfe4df;border-radius:10px;padding:10px;background:#fbfcfa}.mins{display:flex;align-items:center;gap:4px}.mins input{text-align:right}.unit{font-size:12px;color:var(--muted)}.del{width:38px;height:38px;border:0;background:#f4eeee;color:var(--danger);border-radius:11px;font-weight:900}.add{width:100%;margin-top:10px;border:1px dashed rgba(23,107,77,.35);background:rgba(23,107,77,.04);color:var(--accent);border-radius:14px;padding:12px;font-weight:900}.footActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.note{margin:12px 2px 0;color:var(--muted);font-size:12px;line-height:1.7;text-align:center}
+    @media(max-width:520px){.wrap{padding-left:10px;padding-right:10px}.hero{padding:21px 17px}.timerCard,.panel{padding:14px;border-radius:18px}.controls{grid-template-columns:1fr 1fr}.controls .primary{grid-column:1/-1}.row{grid-template-columns:auto 1fr 75px auto;gap:6px;padding:8px}.row input{padding:9px 7px}.del{width:34px}.footActions{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="home" href="../../">← ホームへ戻る</a><span class="badge">登録不要・無料</span></div>
+    <section class="hero"><span class="eyebrow">MEETING & PRESENTATION</span><h1>段取りタイマー</h1><p>会議やプレゼンの「何に何分使うか」を先に決めて、時間オーバーを防ぐ進行タイマーです。</p></section>
+
+    <section class="timerCard" aria-live="polite">
+      <div class="phase" id="phaseName">準備完了</div>
+      <div class="clock" id="clock">00:00</div>
+      <div class="subtime" id="subtime">項目を設定してスタート</div>
+      <div class="progress" aria-label="進行率"><i id="bar"></i></div>
+      <div class="controls">
+        <button class="btn primary" id="startBtn">スタート</button>
+        <button class="btn secondary" id="nextBtn" disabled>次へ</button>
+        <button class="btn warn" id="resetBtn">リセット</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead"><h2>進行プラン</h2><span class="total" id="total">合計 0分</span></div>
+      <div class="presets">
+        <button class="chip" data-preset="presentation">15分プレゼン</button>
+        <button class="chip" data-preset="meeting">30分会議</button>
+        <button class="chip" data-preset="study">25分集中</button>
+      </div>
+      <div class="list" id="list"></div>
+      <button class="add" id="addBtn">＋ 項目を追加</button>
+      <div class="footActions"><button class="btn secondary" id="saveBtn">このプランを保存</button><button class="btn secondary" id="clearBtn">最初から作り直す</button></div>
+      <p class="note">時間は端末内だけに保存されます。項目終了時は、対応端末では短く振動して知らせます。</p>
+    </section>
+  </main>
+<script>
+(()=>{
+  const KEY='dandori-timer-plan-v1';
+  const presets={
+    presentation:[['導入',2],['本題',9],['まとめ',2],['質疑',2]],
+    meeting:[['目的確認',3],['共有',10],['議論',12],['決定・次の行動',5]],
+    study:[['集中',20],['見直し',5]]
+  };
+  let items=[]; let current=0; let running=false; let endAt=0; let remain=0; let timer=null; let startedTotal=0;
+  const $=s=>document.querySelector(s), list=$('#list'), clock=$('#clock'), phase=$('#phaseName'), sub=$('#subtime'), bar=$('#bar'), start=$('#startBtn'), next=$('#nextBtn');
+  const sanitize=v=>String(v??'').slice(0,40);
+  function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(x)&&x.length)items=x.map(i=>({name:sanitize(i.name),minutes:Math.max(1,Math.min(180,Number(i.minutes)||1))}));}catch(e){} if(!items.length)items=presets.presentation.map(([name,minutes])=>({name,minutes}));render();resetTimer(false)}
+  function save(){localStorage.setItem(KEY,JSON.stringify(items));flash('保存しました')}
+  function render(){list.innerHTML='';items.forEach((it,i)=>{const row=document.createElement('div');row.className='row'+(i===current&&running?' active':'')+(running&&i<current?' done':'');row.innerHTML=`<span class="num">${i+1}</span><input class="name" aria-label="項目名" value="${escapeHtml(it.name)}"><div class="mins"><input class="min" type="number" min="1" max="180" inputmode="numeric" aria-label="分" value="${it.minutes}"><span class="unit">分</span></div><button class="del" aria-label="削除">×</button>`;row.querySelector('.name').addEventListener('input',e=>{items[i].name=sanitize(e.target.value);updateIdle()});row.querySelector('.min').addEventListener('input',e=>{items[i].minutes=Math.max(1,Math.min(180,Number(e.target.value)||1));updateTotal();updateIdle()});row.querySelector('.del').addEventListener('click',()=>{if(running)return;if(items.length===1)return;items.splice(i,1);current=Math.min(current,items.length-1);render();updateIdle()});list.appendChild(row)});updateTotal()}
+  function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+  function updateTotal(){const t=items.reduce((a,b)=>a+(Number(b.minutes)||0),0);$('#total').textContent=`合計 ${t}分`}
+  function fmt(sec){sec=Math.max(0,Math.ceil(sec));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`}
+  function updateIdle(){if(running)return;remain=(items[current]?.minutes||0)*60;startedTotal=remain;clock.textContent=fmt(remain);phase.textContent=items[current]?.name||'準備完了';sub.textContent=`${current+1} / ${items.length} 項目`;bar.style.width='0%'}
+  function beginPhase(){if(!items.length)return;remain=(items[current].minutes||1)*60;startedTotal=remain;endAt=Date.now()+remain*1000;running=true;start.textContent='一時停止';next.disabled=false;tick();clearInterval(timer);timer=setInterval(tick,250);render()}
+  function tick(){if(!running)return;remain=Math.max(0,(endAt-Date.now())/1000);clock.textContent=fmt(remain);clock.classList.toggle('over',remain<=10);phase.textContent=items[current]?.name||'';sub.textContent=`${current+1} / ${items.length} 項目`;bar.style.width=`${Math.min(100,Math.max(0,(1-remain/startedTotal)*100))}%`;if(remain<=0){clearInterval(timer);timer=null;running=false;notify();if(current<items.length-1){current++;beginPhase()}else{finish()}}}
+  function toggle(){if(!running){if(remain>0&&remain<startedTotal){endAt=Date.now()+remain*1000;running=true;start.textContent='一時停止';timer=setInterval(tick,250);tick();render()}else beginPhase()}else{remain=Math.max(0,(endAt-Date.now())/1000);running=false;clearInterval(timer);timer=null;start.textContent='再開';render()}}
+  function goNext(){if(!items.length)return;clearInterval(timer);timer=null;notify();if(current<items.length-1){current++;beginPhase()}else finish()}
+  function finish(){running=false;remain=0;clock.textContent='00:00';clock.classList.remove('over');phase.textContent='完了！';sub.textContent='おつかれさまでした';bar.style.width='100%';start.textContent='もう一度';next.disabled=true;current=0;render()}
+  function resetTimer(shouldRender=true){clearInterval(timer);timer=null;running=false;current=0;start.textContent='スタート';next.disabled=true;clock.classList.remove('over');if(shouldRender)render();updateIdle()}
+  function notify(){try{if(navigator.vibrate)navigator.vibrate([100,60,100])}catch(e){}}
+  function flash(msg){const old=sub.textContent;sub.textContent=msg;setTimeout(()=>{if(!running)sub.textContent=old},1200)}
+  start.addEventListener('click',toggle);next.addEventListener('click',goNext);$('#resetBtn').addEventListener('click',()=>resetTimer());
+  $('#addBtn').addEventListener('click',()=>{if(running)return;items.push({name:`項目${items.length+1}`,minutes:5});render();updateIdle()});
+  $('#saveBtn').addEventListener('click',save);$('#clearBtn').addEventListener('click',()=>{if(running)return;items=[{name:'項目1',minutes:5}];current=0;render();updateIdle()});
+  document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{if(running)return;items=presets[b.dataset.preset].map(([name,minutes])=>({name,minutes}));current=0;render();updateIdle()}));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&running)tick()});
+  load();
+})();
+</script>
+</body>
+</html>
