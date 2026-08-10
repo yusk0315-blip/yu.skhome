@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>単位かんたん換算｜無料ミニアプリ</title>
+  <meta name="description" content="長さ・重さ・面積・容量・温度をスマホで素早く換算できる無料ツール。登録不要・通信不要。">
+  <style>
+    :root{--bg:#f4f1e9;--card:#fffefa;--ink:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--shadow:0 16px 42px rgba(23,33,29,.09)}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 0%,rgba(214,146,59,.14),transparent 28rem),linear-gradient(180deg,#f8f5ee,var(--bg));min-height:100vh}
+    button,input,select{font:inherit} button{cursor:pointer}
+    .wrap{max-width:760px;margin:auto;padding:18px 16px 44px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+    .home{color:var(--accent);text-decoration:none;font-weight:800;padding:10px 0}.badge{font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff}
+    .hero{padding:24px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:var(--shadow)}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--accent)} h1{margin:8px 0 8px;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,8vw,46px);line-height:1.2}.lead{margin:0;color:var(--muted);line-height:1.8;font-size:14px}
+    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:18px 0 14px}.tab{min-height:46px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font-weight:800;font-size:13px}.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .panel{padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--card);box-shadow:0 10px 28px rgba(23,33,29,.05)}
+    .field{display:grid;grid-template-columns:1fr 150px;gap:10px;margin-bottom:12px}.field input,.field select{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 14px;color:var(--ink)}.field input:focus,.field select:focus{outline:3px solid rgba(23,107,77,.13);border-color:var(--accent)}
+    .swap{width:100%;min-height:44px;border:1px dashed var(--line);border-radius:14px;background:#faf9f5;color:var(--accent);font-weight:800;margin:0 0 12px}
+    .result{padding:18px;border-radius:18px;background:#e8f0ec}.result small{display:block;color:var(--muted);margin-bottom:4px}.big{font-size:clamp(30px,9vw,46px);font-weight:900;letter-spacing:-.03em;word-break:break-all}.formula{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.6}
+    .quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.quick button{border:1px solid var(--line);border-radius:999px;background:#fff;padding:8px 11px;color:var(--ink)}
+    .note{margin:16px 2px 0;color:var(--muted);font-size:12px;line-height:1.7;text-align:center}
+    @media(max-width:560px){.wrap{padding:14px 12px 36px}.hero{padding:20px 16px}.tabs{grid-template-columns:repeat(3,1fr)}.field{grid-template-columns:1fr 118px}.panel{padding:14px}.tab{font-size:12px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="home" href="../../">← ホームへ戻る</a><span class="badge">登録不要・端末内で計算</span></div>
+    <section class="hero">
+      <span class="eyebrow">UNIT CONVERTER</span>
+      <h1>単位かんたん換算</h1>
+      <p class="lead">長さ・重さ・面積・容量・温度を、入力するだけですぐ換算。坪⇄㎡やkg⇄lbなど、日常で迷いやすい単位をまとめました。</p>
+    </section>
+
+    <div class="tabs" id="tabs"></div>
+    <section class="panel">
+      <div class="field">
+        <input id="value" type="number" inputmode="decimal" step="any" value="1" aria-label="換算する数値">
+        <select id="from" aria-label="変換元の単位"></select>
+      </div>
+      <button class="swap" id="swap" type="button">↑↓ 単位を入れ替える</button>
+      <div class="field">
+        <input id="resultInput" type="text" readonly aria-label="換算結果">
+        <select id="to" aria-label="変換先の単位"></select>
+      </div>
+      <div class="result" aria-live="polite">
+        <small>換算結果</small>
+        <div class="big" id="bigResult">—</div>
+        <div class="formula" id="formula"></div>
+      </div>
+      <div class="quick" id="quick"></div>
+    </section>
+    <p class="note">目安用途の簡易換算です。契約・計量・医療など厳密な数値が必要な場面では、公的な換算値をご確認ください。</p>
+  </main>
+<script>
+const data={
+  length:{label:'長さ',units:{m:{name:'m',factor:1},cm:{name:'cm',factor:.01},mm:{name:'mm',factor:.001},km:{name:'km',factor:1000},inch:{name:'inch',factor:.0254},ft:{name:'ft',factor:.3048},yd:{name:'yd',factor:.9144}},quick:[1,10,100]},
+  weight:{label:'重さ',units:{kg:{name:'kg',factor:1},g:{name:'g',factor:.001},mg:{name:'mg',factor:.000001},lb:{name:'lb',factor:.45359237},oz:{name:'oz',factor:.028349523125}},quick:[1,5,10]},
+  area:{label:'面積',units:{sqm:{name:'㎡',factor:1},tsubo:{name:'坪',factor:3.30578512397},sqft:{name:'ft²',factor:.09290304},a:{name:'a',factor:100},ha:{name:'ha',factor:10000}},quick:[10,50,100]},
+  volume:{label:'容量',units:{l:{name:'L',factor:1},ml:{name:'mL',factor:.001},dl:{name:'dL',factor:.1},cup:{name:'カップ(200mL)',factor:.2},tbsp:{name:'大さじ(15mL)',factor:.015},tsp:{name:'小さじ(5mL)',factor:.005}},quick:[1,2,5]},
+  temp:{label:'温度',units:{c:{name:'℃'},f:{name:'℉'},k:{name:'K'}},quick:[0,20,100]}
+};
+let category='length';
+const el=id=>document.getElementById(id), tabs=el('tabs'), value=el('value'), from=el('from'), to=el('to'), resultInput=el('resultInput'), big=el('bigResult'), formula=el('formula'), quick=el('quick');
+function format(n){if(!Number.isFinite(n))return '—';const abs=Math.abs(n);if(abs!==0&&(abs>=1e9||abs<1e-6))return n.toExponential(6);return new Intl.NumberFormat('ja-JP',{maximumFractionDigits:8}).format(n)}
+function tempConvert(v,a,b){let c=a==='c'?v:a==='f'?(v-32)*5/9:v-273.15;return b==='c'?c:b==='f'?c*9/5+32:c+273.15}
+function calc(){const v=parseFloat(value.value);if(Number.isNaN(v)){resultInput.value='';big.textContent='—';formula.textContent='数値を入力してください';return}const a=from.value,b=to.value;let r;if(category==='temp')r=tempConvert(v,a,b);else r=v*data[category].units[a].factor/data[category].units[b].factor;const out=format(r);resultInput.value=out;big.textContent=out+' '+data[category].units[b].name;formula.textContent=`${format(v)} ${data[category].units[a].name} → ${out} ${data[category].units[b].name}`}
+function fillUnits(){const units=data[category].units;from.innerHTML=to.innerHTML='';Object.entries(units).forEach(([k,u])=>{from.add(new Option(u.name,k));to.add(new Option(u.name,k))});const keys=Object.keys(units);to.value=keys[1]||keys[0];quick.innerHTML='';data[category].quick.forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{value.value=n;calc()};quick.appendChild(b)});calc()}
+function renderTabs(){tabs.innerHTML='';Object.entries(data).forEach(([k,v])=>{const b=document.createElement('button');b.className='tab'+(k===category?' active':'');b.type='button';b.textContent=v.label;b.onclick=()=>{category=k;renderTabs();fillUnits()};tabs.appendChild(b)})}
+el('swap').onclick=()=>{const t=from.value;from.value=to.value;to.value=t;calc()};[value,from,to].forEach(x=>x.addEventListener('input',calc));[from,to].forEach(x=>x.addEventListener('change',calc));renderTabs();fillUnits();
+</script>
+</body>
+</html>
