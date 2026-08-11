@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>立替精算｜誰が誰にいくら払う？</title>
+<meta name="description" content="旅行・飲み会・イベントの立替をまとめて、誰が誰にいくら払えば精算できるか自動計算します。">
+<style>
+:root{--bg:#f6f3ec;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--danger:#b33a3a;--shadow:0 14px 38px rgba(23,33,29,.09)}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#f8f6f0,#ece8df);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;min-height:100vh}.wrap{max-width:720px;margin:auto;padding:18px 14px 54px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--accent);text-decoration:none;font-weight:800}.tag{font-size:12px;color:var(--muted)}h1{font-size:29px;line-height:1.25;margin:10px 0 8px}.lead{color:var(--muted);line-height:1.75;margin:0 0 18px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin:12px 0}.card h2{font-size:17px;margin:0 0 12px}.row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;margin:8px 0;align-items:center}input,button{font:inherit}input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:white;color:var(--text)}button{min-height:46px;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--accent);color:white;width:100%;font-size:16px}.secondary{background:#edf4f0;color:var(--accent)}.remove{background:#f8ecea;color:var(--danger);padding:8px 11px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#f2f5f1;border-radius:14px;padding:12px}.stat small{display:block;color:var(--muted);margin-bottom:4px}.stat strong{font-size:21px}.settlement{padding:13px 0;border-bottom:1px solid var(--line);font-size:16px;line-height:1.6}.settlement:last-child{border-bottom:0}.arrow{color:var(--accent);font-weight:900}.empty{color:var(--muted);text-align:center;padding:12px 0}.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:10px}.ok{color:var(--accent);font-weight:800}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}@media(max-width:520px){h1{font-size:25px}.row{grid-template-columns:1fr 105px auto}.actions{grid-template-columns:1fr}.card{padding:14px}.remove{min-width:46px;padding:8px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="home" href="../../">← ホーム</a><span class="tag">登録不要・端末内で完結</span></div>
+  <h1>立替精算</h1>
+  <p class="lead">旅行や飲み会の立替額を入力すると、全員が同額負担になるよう「誰が誰にいくら払うか」を最小限の送金回数で整理します。</p>
+
+  <section class="card">
+    <h2>参加者と立替額</h2>
+    <div id="people"></div>
+    <div class="actions"><button class="secondary" id="add">＋ 人を追加</button><button class="secondary" id="example">例を入れる</button></div>
+    <p class="note">※ この版は全員が同じ金額を負担するケース用です。立替額は交通費・宿泊費・食事代などを合計して入力してください。</p>
+  </section>
+
+  <button class="primary" id="calc">精算方法を計算</button>
+
+  <section class="card" id="resultCard" hidden>
+    <h2>精算結果</h2>
+    <div class="summary"><div class="stat"><small>支払総額</small><strong id="total">¥0</strong></div><div class="stat"><small>1人あたり</small><strong id="per">¥0</strong></div></div>
+    <div id="settlements" style="margin-top:10px"></div>
+    <div class="actions"><button class="secondary" id="copy">結果をコピー</button><button class="secondary" id="clear">入力をクリア</button></div>
+  </section>
+  <p class="footer">データは外部送信されません。</p>
+</main>
+<script>
+const people=document.getElementById('people');
+const resultCard=document.getElementById('resultCard');
+const yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Math.round(n));
+function addPerson(name='',amount=''){
+  const row=document.createElement('div'); row.className='row';
+  row.innerHTML=`<input class="name" aria-label="名前" placeholder="名前" value="${escapeHtml(name)}"><input class="amount" aria-label="立替額" inputmode="numeric" type="number" min="0" step="1" placeholder="0" value="${amount}"><button class="remove" aria-label="削除">×</button>`;
+  row.querySelector('.remove').onclick=()=>{if(people.children.length>2)row.remove()}; people.appendChild(row);
+}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function reset(){people.innerHTML='';addPerson('Aさん');addPerson('Bさん');addPerson('Cさん');resultCard.hidden=true;localStorage.removeItem('warikanPeople')}
+function read(){return [...people.querySelectorAll('.row')].map((r,i)=>({name:r.querySelector('.name').value.trim()||`参加者${i+1}`,paid:Math.max(0,Number(r.querySelector('.amount').value)||0)}))}
+function save(){localStorage.setItem('warikanPeople',JSON.stringify(read()))}
+function calc(){
+ const list=read(); if(list.length<2)return; save(); const total=list.reduce((s,p)=>s+p.paid,0), per=total/list.length;
+ document.getElementById('total').textContent=yen(total); document.getElementById('per').textContent=yen(per);
+ const creditors=[],debtors=[]; list.forEach(p=>{const d=p.paid-per;if(d>0.5)creditors.push({name:p.name,v:d});else if(d<-0.5)debtors.push({name:p.name,v:-d})});
+ creditors.sort((a,b)=>b.v-a.v); debtors.sort((a,b)=>b.v-a.v); let i=0,j=0, moves=[];
+ while(i<debtors.length&&j<creditors.length){const a=Math.min(debtors[i].v,creditors[j].v); if(a>0.5)moves.push({from:debtors[i].name,to:creditors[j].name,amount:a}); debtors[i].v-=a;creditors[j].v-=a;if(debtors[i].v<0.5)i++;if(creditors[j].v<0.5)j++;}
+ const box=document.getElementById('settlements'); box.innerHTML=moves.length?moves.map(m=>`<div class="settlement"><strong>${escapeHtml(m.from)}</strong> <span class="arrow">→</span> <strong>${escapeHtml(m.to)}</strong><br>${yen(m.amount)} を支払う</div>`).join(''):'<div class="empty ok">すでに精算済みです 🎉</div>';
+ resultCard.hidden=false; resultCard.scrollIntoView({behavior:'smooth',block:'start'});
+ window.lastResult={list,total,per,moves};
+}
+document.getElementById('add').onclick=()=>addPerson();
+document.getElementById('example').onclick=()=>{people.innerHTML='';addPerson('ゆう',12000);addPerson('みき',3000);addPerson('けん',0);resultCard.hidden=true};
+document.getElementById('calc').onclick=calc;
+document.getElementById('clear').onclick=reset;
+document.getElementById('copy').onclick=async()=>{if(!window.lastResult)return;const r=window.lastResult;const text=['【立替精算】',`合計 ${yen(r.total)} / 1人 ${yen(r.per)}`,...(r.moves.length?r.moves.map(m=>`${m.from} → ${m.to}: ${yen(m.amount)}`):['精算済み'])].join('\n');try{await navigator.clipboard.writeText(text);document.getElementById('copy').textContent='コピーしました';setTimeout(()=>document.getElementById('copy').textContent='結果をコピー',1400)}catch(e){alert(text)}};
+const saved=JSON.parse(localStorage.getItem('warikanPeople')||'null'); if(saved?.length>=2)saved.forEach(p=>addPerson(p.name,p.paid));else reset();
+</script>
+</body>
+</html>
