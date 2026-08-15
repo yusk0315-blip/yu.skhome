@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>パスワードメーカー｜安全な文字列をすぐ生成</title>
+  <meta name="description" content="文字数や記号の有無を選んで、ブラウザ内だけでランダムなパスワードを生成できる無料ツールです。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#d6923b;--danger:#b42318}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f7f5ef,#ece8df);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;min-height:100vh}
+    .wrap{max-width:680px;margin:auto;padding:18px 16px 42px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.back{color:var(--accent);text-decoration:none;font-weight:800}.badge{font-size:12px;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 18px 46px rgba(23,33,29,.08)}h1{font-size:28px;margin:0 0 8px}.lead{color:var(--muted);line-height:1.8;margin:0 0 20px}
+    .result{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:stretch;margin-bottom:18px}.out{word-break:break-all;min-height:62px;padding:16px;border-radius:16px;background:#f3f6f3;border:1px solid var(--line);font:700 20px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}.copy{border:0;border-radius:16px;padding:0 18px;background:var(--accent);color:#fff;font-weight:800;font-size:15px}
+    .meter{height:8px;background:#e6e8e5;border-radius:999px;overflow:hidden;margin:-6px 0 6px}.meter span{display:block;height:100%;width:0;background:var(--accent);transition:.2s}.strength{font-size:13px;color:var(--muted);margin-bottom:20px}
+    .section{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}.row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:14px 0}.row label{font-weight:700}.len{font-size:28px;color:var(--accent);font-weight:900;min-width:52px;text-align:right}input[type=range]{width:100%;accent-color:var(--accent)}
+    .checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{display:flex;align-items:center;gap:10px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fff}.check input{width:20px;height:20px;accent-color:var(--accent)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.btn{min-height:52px;border-radius:16px;border:1px solid var(--line);font-weight:900;font-size:16px}.primary{background:var(--accent);color:white;border-color:var(--accent)}.secondary{background:white;color:var(--text)}
+    .note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:18px;padding:13px;background:#f7f5ef;border-radius:14px}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#17211d;color:white;padding:10px 16px;border-radius:999px;font-size:13px;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:480px){.card{padding:18px;border-radius:20px}h1{font-size:24px}.result{grid-template-columns:1fr}.copy{min-height:48px}.checks{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.out{font-size:18px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="../../">← ホームへ戻る</a><span class="badge">登録・通信不要</span></div>
+  <main class="card">
+    <h1>パスワードメーカー</h1>
+    <p class="lead">文字数や使う文字を選ぶだけ。端末のブラウザ内でランダム生成します。</p>
+    <div class="result"><div id="output" class="out" aria-live="polite"></div><button id="copy" class="copy" type="button">コピー</button></div>
+    <div class="meter"><span id="meter"></span></div><div id="strength" class="strength"></div>
+    <div class="section">
+      <div class="row"><label for="length">文字数</label><span id="lengthValue" class="len">16</span></div>
+      <input id="length" type="range" min="8" max="40" value="16" step="1">
+      <div class="checks">
+        <label class="check"><input id="upper" type="checkbox" checked>大文字 A-Z</label>
+        <label class="check"><input id="lower" type="checkbox" checked>小文字 a-z</label>
+        <label class="check"><input id="number" type="checkbox" checked>数字 0-9</label>
+        <label class="check"><input id="symbol" type="checkbox" checked>記号 !@#$...</label>
+        <label class="check"><input id="ambiguous" type="checkbox">紛らわしい文字を除外</label>
+      </div>
+      <div class="actions"><button id="generate" class="btn primary" type="button">新しく生成</button><button id="simple" class="btn secondary" type="button">覚えやすめ 12文字</button></div>
+    </div>
+    <p class="note">生成処理はこのページ内だけで行い、入力や生成結果をサーバーへ送信しません。重要なサービスでは、サービスごとに異なるパスワードと多要素認証の利用がおすすめです。</p>
+  </main>
+</div>
+<div id="toast" class="toast">コピーしました</div>
+<script>
+const $=id=>document.getElementById(id);
+const sets={upper:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',lower:'abcdefghijklmnopqrstuvwxyz',number:'0123456789',symbol:'!@#$%^&*_-+=?'};
+function secureIndex(max){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%max}
+function filtered(s){return $('ambiguous').checked?s.replace(/[O0Il1|]/g,''):s}
+function options(){return ['upper','lower','number','symbol'].filter(id=>$(id).checked)}
+function generate(){let opts=options();if(!opts.length){$('lower').checked=true;opts=['lower']}const len=+$('length').value;const pools=opts.map(k=>filtered(sets[k]));let all=pools.join('');let chars=pools.map(p=>p[secureIndex(p.length)]);while(chars.length<len)chars.push(all[secureIndex(all.length)]);for(let i=chars.length-1;i>0;i--){let j=secureIndex(i+1);[chars[i],chars[j]]=[chars[j],chars[i]]}$('output').textContent=chars.join('');updateStrength(len,opts.length)}
+function updateStrength(len,kinds){let score=Math.min(4,(len>=12)+(len>=16)+(kinds>=3)+(kinds===4&&len>=20));let labels=['弱め','やや弱め','標準','強い','かなり強い'];$('strength').textContent='目安：'+labels[score];$('meter').style.width=(20+score*20)+'%'}
+$('length').addEventListener('input',()=>{$('lengthValue').textContent=$('length').value;generate()});['upper','lower','number','symbol','ambiguous'].forEach(id=>$(id).addEventListener('change',generate));$('generate').addEventListener('click',generate);
+$('simple').addEventListener('click',()=>{$('length').value=12;$('lengthValue').textContent=12;$('upper').checked=true;$('lower').checked=true;$('number').checked=true;$('symbol').checked=false;$('ambiguous').checked=true;generate()});
+$('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').textContent);$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1300)}catch(e){const r=document.createRange();r.selectNodeContents($('output'));const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges()}});
+generate();
+</script>
+</body>
+</html>
