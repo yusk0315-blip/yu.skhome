@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>文章差分チェッカー｜ゆーすけ無料アプリ集</title>
+<meta name="description" content="修正前と修正後の文章を貼り付けて、追加・削除・変更行を見やすく比較する無料ブラウザツール。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--add:#e8f7ef;--del:#fff0ed;--addText:#12603f;--delText:#9b3628;--shadow:0 16px 40px rgba(23,33,29,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;background:linear-gradient(180deg,#f7f5ef,#ece9df);color:var(--text);min-height:100vh}.wrap{max-width:980px;margin:auto;padding:16px 14px 56px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--accent);text-decoration:none;font-weight:800;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}h1{font-size:clamp(25px,7vw,38px);margin:8px 0 6px;line-height:1.2}.lead{color:var(--muted);line-height:1.7;margin:0 0 16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.box label{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:800;margin:0 0 7px}.count{color:var(--muted);font-weight:600}textarea{width:100%;min-height:220px;resize:vertical;border:1px solid var(--line);border-radius:14px;padding:13px;font:15px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;color:var(--text)}textarea:focus{outline:3px solid rgba(23,107,77,.13);border-color:var(--accent)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:13px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--accent);color:#fff;flex:1}.sub{background:#f0eee7;color:var(--text)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}.stat{border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center;background:#fff}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}.result{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.empty{padding:28px 16px;text-align:center;color:var(--muted);line-height:1.7}.row{display:grid;grid-template-columns:48px 28px 1fr;border-top:1px solid rgba(23,33,29,.08);min-height:38px;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}.row:first-child{border-top:0}.ln{padding:8px 7px;text-align:right;color:#8a928d;background:rgba(0,0,0,.025);user-select:none}.mark{padding:8px 4px;text-align:center;font-weight:900}.txt{padding:8px 10px;white-space:pre-wrap;overflow-wrap:anywhere}.add{background:var(--add);color:var(--addText)}.del{background:var(--del);color:var(--delText)}.same{color:#4b544f}.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:12px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:0 0 10px}.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.dot.a{background:#bce6cc}.dot.d{background:#f3c4bb}@media(max-width:680px){.inputs{grid-template-columns:1fr}.box textarea{min-height:160px}.stats{grid-template-columns:1fr 1fr}.row{grid-template-columns:38px 24px 1fr}.wrap{padding-left:10px;padding-right:10px}.panel{padding:11px;border-radius:17px}.top small{display:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><div><small>WORK / TEXT TOOL</small><h1>文章差分チェッカー</h1></div><a class="home" href="../../">← ホーム</a></div>
+<p class="lead">修正前と修正後の文章を貼り付けるだけ。行単位で「追加」「削除」「そのまま」を見やすく表示します。</p>
+<section class="panel">
+<div class="inputs">
+<div class="box"><label for="before">修正前 <span class="count" id="beforeCount">0文字</span></label><textarea id="before" placeholder="修正前の文章を貼り付け"></textarea></div>
+<div class="box"><label for="after">修正後 <span class="count" id="afterCount">0文字</span></label><textarea id="after" placeholder="修正後の文章を貼り付け"></textarea></div>
+</div>
+<div class="actions"><button class="btn primary" id="compare">差分を見る</button><button class="btn sub" id="swap">前後を入れ替え</button><button class="btn sub" id="clear">クリア</button></div>
+<div class="stats"><div class="stat"><b id="added">0</b><span>追加行</span></div><div class="stat"><b id="deleted">0</b><span>削除行</span></div><div class="stat"><b id="same">0</b><span>同じ行</span></div><div class="stat"><b id="rate">—</b><span>一致率</span></div></div>
+<div class="legend"><span><i class="dot a"></i>追加</span><span><i class="dot d"></i>削除</span><span>± 修正された行は削除＋追加で表示</span></div>
+<div class="result" id="result"><div class="empty">文章を2つ入力して「差分を見る」を押してください。</div></div>
+<p class="note">※ 比較はブラウザ内だけで行われ、入力内容を外部へ送信しません。行単位の比較なので、長文の修正確認やメール・資料の見比べに向いています。</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);const before=$('before'),after=$('after'),result=$('result');
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function linesOf(s){return s===''?[]:s.replace(/\r\n/g,'\n').split('\n');}
+function diff(a,b){const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>new Uint16Array(m+1));for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);let i=0,j=0,out=[];while(i<n&&j<m){if(a[i]===b[j]){out.push({t:'same',v:a[i],ln:i+1});i++;j++;}else if(dp[i+1][j]>=dp[i][j+1]){out.push({t:'del',v:a[i],ln:i+1});i++;}else{out.push({t:'add',v:b[j],ln:j+1});j++;}}while(i<n)out.push({t:'del',v:a[i],ln:++i});while(j<m)out.push({t:'add',v:b[j],ln:++j});return out;}
+function compare(){const a=linesOf(before.value),b=linesOf(after.value);if(!a.length&&!b.length){result.innerHTML='<div class="empty">文章を2つ入力して「差分を見る」を押してください。</div>';setStats(0,0,0,0);return;}const d=diff(a,b);let add=0,del=0,same=0;result.innerHTML=d.map(x=>{if(x.t==='add')add++;else if(x.t==='del')del++;else same++;const mark=x.t==='add'?'+':x.t==='del'?'−':' ';return `<div class="row ${x.t}"><div class="ln">${x.ln}</div><div class="mark">${mark}</div><div class="txt">${esc(x.v)||'&nbsp;'}</div></div>`}).join('');const denom=Math.max(a.length,b.length,1);setStats(add,del,same,Math.round(same/denom*100));localStorage.setItem('textDiff.before',before.value);localStorage.setItem('textDiff.after',after.value);}
+function setStats(a,d,s,r){$('added').textContent=a;$('deleted').textContent=d;$('same').textContent=s;$('rate').textContent=(a+d+s)?r+'%':'—';}
+function counts(){ $('beforeCount').textContent=before.value.length+'文字';$('afterCount').textContent=after.value.length+'文字';}
+before.value=localStorage.getItem('textDiff.before')||'';after.value=localStorage.getItem('textDiff.after')||'';counts();
+before.addEventListener('input',counts);after.addEventListener('input',counts);$('compare').addEventListener('click',compare);$('swap').addEventListener('click',()=>{const t=before.value;before.value=after.value;after.value=t;counts();compare();});$('clear').addEventListener('click',()=>{before.value='';after.value='';localStorage.removeItem('textDiff.before');localStorage.removeItem('textDiff.after');counts();compare();before.focus();});
+</script>
+</body>
+</html>
