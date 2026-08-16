@@ -1,0 +1,23 @@
+name: Sync text diff card
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_text_diff_card.py'
+      - '.github/workflows/sync-text-diff.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/sync_text_diff_card.py
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git commit -m '文章差分チェッカーをホームに追加'
+          git push
