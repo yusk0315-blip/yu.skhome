@@ -1,0 +1,23 @@
+name: Sync date counter card
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_date_counter_card.py'
+      - '.github/workflows/sync-date-counter.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/sync_date_counter_card.py
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git commit -m '日付カウンターをホームに追加'
+          git push
