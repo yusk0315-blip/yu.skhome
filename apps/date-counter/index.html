@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176b4d">
+  <title>日付カウンター｜ゆーすけ無料アプリ集</title>
+  <meta name="description" content="2つの日付の間の日数・平日数や、指定日から何日後・何日前の日付をすぐ計算できる無料ツール。">
+  <style>
+    :root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--accent:#176b4d;--accent2:#d6923b;--shadow:0 18px 50px rgba(23,33,29,.09)}
+    *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(214,146,59,.12),transparent 26rem),linear-gradient(180deg,#f7f5f0,var(--bg));min-height:100vh}
+    a{color:inherit}.wrap{max-width:760px;margin:0 auto;padding:18px 16px 54px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.back{text-decoration:none;font-weight:800;color:var(--accent);padding:10px 12px;border-radius:999px;background:#fff;border:1px solid var(--line)}.badge{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.08em}
+    .hero,.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}.hero{padding:24px}.hero h1{font-family:Georgia,"Yu Mincho",serif;font-size:clamp(30px,8vw,46px);line-height:1.2;margin:4px 0 10px}.hero p{margin:0;color:var(--muted);line-height:1.8}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;padding:6px;background:rgba(23,107,77,.07);border-radius:16px}.tab{border:0;border-radius:12px;padding:12px 8px;background:transparent;color:var(--muted);font:inherit;font-weight:800}.tab.active{background:#fff;color:var(--accent);box-shadow:0 4px 14px rgba(23,33,29,.08)}
+    .panel{margin-top:14px;padding:20px}.mode{display:none}.mode.active{display:block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-size:13px;font-weight:800;color:var(--muted)}input,select{width:100%;min-height:50px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 14px;font:inherit;color:var(--text);font-size:16px}input:focus,select:focus{outline:3px solid rgba(23,107,77,.14);border-color:var(--accent)}
+    .result{margin-top:18px;padding:18px;border-radius:18px;background:rgba(23,107,77,.07);border:1px solid rgba(23,107,77,.12)}.big{font-size:34px;font-weight:900;letter-spacing:-.03em;color:var(--accent)}.sub{margin-top:7px;color:var(--muted);line-height:1.7}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.chip{padding:8px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:700}
+    .check{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--muted);font-size:14px}.check input{width:20px;min-height:auto;height:20px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;font:inherit;font-weight:800;color:var(--accent)}
+    .note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:16px}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
+    @media(max-width:560px){.wrap{padding:14px 12px 42px}.hero{padding:20px}.panel{padding:16px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.big{font-size:30px}.top{margin-bottom:12px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="back" href="../../">← ホーム</a><span class="badge">DATE TOOL</span></div>
+    <section class="hero">
+      <h1>日付カウンター</h1>
+      <p>「あと何日？」「何日間あった？」「100日後はいつ？」をすぐ計算。旅行・締切・記念日・仕事の日程確認に。</p>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-mode="between" type="button">日付の差</button>
+        <button class="tab" data-mode="shift" type="button">○日後・○日前</button>
+      </div>
+    </section>
+
+    <section class="panel mode active" id="between">
+      <div class="grid">
+        <div class="field"><label for="start">開始日</label><input id="start" type="date"></div>
+        <div class="field"><label for="end">終了日</label><input id="end" type="date"></div>
+      </div>
+      <label class="check"><input id="inclusive" type="checkbox">開始日と終了日の両方を1日として数える</label>
+      <div class="result" aria-live="polite">
+        <div class="big" id="daysResult">—</div>
+        <div class="sub" id="betweenText">日付を選ぶと結果を表示します。</div>
+        <div class="chips"><span class="chip" id="weeksResult">—週</span><span class="chip" id="weekdaysResult">平日 —日</span><span class="chip" id="weekendsResult">土日 —日</span></div>
+      </div>
+      <p class="note">平日は月〜金として計算します。祝日は地域や年で異なるため除外していません。</p>
+    </section>
+
+    <section class="panel mode" id="shift">
+      <div class="grid">
+        <div class="field"><label for="base">基準日</label><input id="base" type="date"></div>
+        <div class="field"><label for="amount">日数</label><input id="amount" type="number" inputmode="numeric" min="0" step="1" value="30"></div>
+        <div class="field full"><label for="direction">方向</label><select id="direction"><option value="after">日後</option><option value="before">日前</option></select></div>
+      </div>
+      <div class="quick"><button type="button" data-n="7">7日</button><button type="button" data-n="30">30日</button><button type="button" data-n="100">100日</button><button type="button" data-n="365">365日</button></div>
+      <div class="result" aria-live="polite">
+        <div class="big" id="shiftResult">—</div>
+        <div class="sub" id="shiftText">基準日と日数から日付を計算します。</div>
+      </div>
+    </section>
+    <div class="footer">計算はすべて端末内で行います。登録・通信は不要です。</div>
+  </main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const localDate = value => { const [y,m,d]=value.split('-').map(Number); return new Date(y,m-1,d,12,0,0); };
+  const formatJP = d => new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'}).format(d);
+  const today = new Date(); today.setHours(12,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+30);
+  $('start').value = iso(today); $('end').value = iso(tomorrow); $('base').value = iso(today);
+
+  document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
+    document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.mode));
+  }));
+
+  function countWeekParts(a,b,inclusive){
+    const sign = b>=a ? 1 : -1;
+    let from = sign===1 ? new Date(a) : new Date(b);
+    let to = sign===1 ? new Date(b) : new Date(a);
+    let weekdays=0, weekends=0;
+    const limit = inclusive ? to.getTime() : to.getTime()-86400000;
+    for(let d=new Date(from); d.getTime()<=limit; d.setDate(d.getDate()+1)){
+      const day=d.getDay(); if(day===0||day===6) weekends++; else weekdays++;
+    }
+    return {weekdays,weekends};
+  }
+
+  function calcBetween(){
+    if(!$('start').value || !$('end').value) return;
+    const a=localDate($('start').value), b=localDate($('end').value);
+    const raw=Math.round((b-a)/86400000); const inclusive=$('inclusive').checked;
+    const signed = raw===0 ? (inclusive?1:0) : raw + (inclusive ? (raw>0?1:-1) : 0);
+    const abs=Math.abs(signed); const parts=countWeekParts(a,b,inclusive);
+    $('daysResult').textContent=`${abs}日`;
+    $('weeksResult').textContent=`${(abs/7).toFixed(abs%7?1:0)}週`;
+    $('weekdaysResult').textContent=`平日 ${parts.weekdays}日`;
+    $('weekendsResult').textContent=`土日 ${parts.weekends}日`;
+    if(raw===0){ $('betweenText').textContent=inclusive?'同じ日を1日として数えています。':'同じ日なので差は0日です。'; }
+    else { const dir=raw>0?'後':'前'; $('betweenText').textContent=`${formatJP(b)} は ${formatJP(a)} の ${Math.abs(signed)}日${dir}です。`; }
+    localStorage.setItem('dateCounterBetween',JSON.stringify({start:$('start').value,end:$('end').value,inclusive}));
+  }
+
+  function calcShift(){
+    if(!$('base').value) return;
+    const n=Math.max(0,Math.floor(Number($('amount').value)||0));
+    const base=localDate($('base').value), out=new Date(base); const before=$('direction').value==='before';
+    out.setDate(out.getDate()+(before?-n:n));
+    $('shiftResult').textContent=formatJP(out);
+    $('shiftText').textContent=`${formatJP(base)} の ${n}日${before?'前':'後'}です。`;
+    localStorage.setItem('dateCounterShift',JSON.stringify({base:$('base').value,amount:n,direction:$('direction').value}));
+  }
+
+  try{
+    const b=JSON.parse(localStorage.getItem('dateCounterBetween')||'null'); if(b){$('start').value=b.start||$('start').value;$('end').value=b.end||$('end').value;$('inclusive').checked=!!b.inclusive;}
+    const s=JSON.parse(localStorage.getItem('dateCounterShift')||'null'); if(s){$('base').value=s.base||$('base').value;$('amount').value=s.amount??30;$('direction').value=s.direction||'after';}
+  }catch(e){}
+  ['start','end','inclusive'].forEach(id=>$(id).addEventListener('change',calcBetween));
+  ['base','amount','direction'].forEach(id=>$(id).addEventListener('input',calcShift));
+  document.querySelectorAll('[data-n]').forEach(btn=>btn.addEventListener('click',()=>{$('amount').value=btn.dataset.n;calcShift();}));
+  calcBetween(); calcShift();
+})();
+</script>
+</body>
+</html>
