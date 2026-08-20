@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ライトアウト5×5｜ゆーすけ無料アプリ集</title>
+<meta name="description" content="光るマスをタップして全部消す、短時間で遊べる5×5パズルゲーム。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--accent:#176b4d;--gold:#d6923b;--on:#ffd45a;--off:#20332b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:radial-gradient(circle at top,#fff8df 0,transparent 32rem),var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:560px;margin:auto;padding:18px 16px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.back{color:var(--accent);text-decoration:none;font-weight:800}.tag{font-size:12px;color:var(--muted)}
+h1{font-size:30px;margin:24px 0 8px;letter-spacing:.02em}.lead{margin:0;color:var(--muted);line-height:1.75}.panel{margin-top:18px;padding:18px;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 16px 40px rgba(23,33,29,.08)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px 8px;text-align:center;border-radius:15px;background:#f1f4ef}.stat strong{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+.controls{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px}select,button{font:inherit;min-height:48px;border-radius:14px;border:1px solid var(--line)}select{padding:0 12px;background:#fff}button{padding:0 16px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}.ghost{background:#fff;color:var(--text)}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px auto 8px;max-width:440px;touch-action:manipulation}.cell{aspect-ratio:1;border:0;border-radius:18%;padding:0;background:var(--off);box-shadow:inset 0 -4px 0 rgba(0,0,0,.12);transition:transform .08s,background .16s,box-shadow .16s}.cell:active{transform:scale(.94)}.cell.on{background:var(--on);box-shadow:0 0 18px rgba(255,212,90,.5),inset 0 -4px 0 rgba(156,111,0,.18)}
+.message{min-height:28px;text-align:center;font-weight:800;color:var(--accent);margin-top:12px}.rules{font-size:13px;color:var(--muted);line-height:1.7;margin:14px 0 0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.best{margin-top:14px;padding:12px;border-radius:14px;background:#fff8e7;color:#6e5420;font-size:13px;text-align:center}
+@media(max-width:420px){h1{font-size:26px}.panel{padding:14px}.board{gap:7px}.stats{gap:6px}.stat strong{font-size:20px}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><a class="back" href="../../">← ホームへ</a><span class="tag">登録・通信不要</span></div>
+<h1>ライトアウト 5×5</h1><p class="lead">光っているマスを全部消せばクリア。1マス押すと、そのマスと上下左右が反転します。</p>
+<section class="panel">
+<div class="stats"><div class="stat"><strong id="moves">0</strong><span>手数</span></div><div class="stat"><strong id="time">0:00</strong><span>タイム</span></div><div class="stat"><strong id="lights">0</strong><span>残り点灯</span></div></div>
+<div class="controls"><select id="difficulty" aria-label="難易度"><option value="easy">やさしい</option><option value="normal" selected>ふつう</option><option value="hard">むずかしい</option></select><button id="newBtn">新しい問題</button></div>
+<div class="board" id="board" aria-label="5×5のパズル盤"></div>
+<div class="message" id="message"></div>
+<div class="actions"><button class="ghost" id="resetBtn">最初から</button><button class="ghost" id="hintBtn">ルール確認</button></div>
+<div class="best" id="best">ベスト：まだありません</div>
+<p class="rules">コツ：角や端は影響するマスが少なめ。むやみに押すより、上の段から順番に消していくと考えやすくなります。</p>
+</section></main>
+<script>
+const N=5, boardEl=document.getElementById('board'), movesEl=document.getElementById('moves'), timeEl=document.getElementById('time'), lightsEl=document.getElementById('lights'), msg=document.getElementById('message'), diff=document.getElementById('difficulty'), bestEl=document.getElementById('best');
+let board=[],initial=[],moves=0,startAt=0,timer=null,started=false,locked=false;
+for(let i=0;i<N*N;i++){const b=document.createElement('button');b.className='cell';b.setAttribute('aria-label',`${Math.floor(i/N)+1}行${i%N+1}列`);b.addEventListener('click',()=>play(i));boardEl.appendChild(b)}
+const cells=[...boardEl.children];
+function flip(arr,i){const r=Math.floor(i/N),c=i%N;[[r,c],[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([rr,cc])=>{if(rr>=0&&rr<N&&cc>=0&&cc<N){const k=rr*N+cc;arr[k]=!arr[k]}})}
+function render(){let on=0;board.forEach((v,i)=>{cells[i].classList.toggle('on',v);cells[i].setAttribute('aria-pressed',v?'true':'false');if(v)on++});movesEl.textContent=moves;lightsEl.textContent=on;return on}
+function formatTime(sec){return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`}
+function tick(){if(!started)return;timeEl.textContent=formatTime(Math.floor((Date.now()-startAt)/1000))}
+function startTimer(){if(started)return;started=true;startAt=Date.now();timer=setInterval(tick,250)}
+function makePuzzle(){clearInterval(timer);timer=null;started=false;locked=false;moves=0;timeEl.textContent='0:00';msg.textContent='';board=Array(N*N).fill(false);const count={easy:5,normal:9,hard:14}[diff.value];let seq=[];while(seq.length<count){let x=Math.floor(Math.random()*N*N);if(seq[seq.length-1]!==x){seq.push(x);flip(board,x)}}if(!board.some(Boolean))flip(board,12);initial=[...board];render();showBest()}
+function play(i){if(locked)return;startTimer();flip(board,i);moves++;const on=render();if(on===0){locked=true;clearInterval(timer);tick();const sec=Math.floor((Date.now()-startAt)/1000);msg.textContent=`クリア！ ${moves}手・${formatTime(sec)}`;saveBest(moves,sec);if(navigator.vibrate)navigator.vibrate([60,40,100])}}
+function reset(){clearInterval(timer);timer=null;started=false;locked=false;moves=0;timeEl.textContent='0:00';msg.textContent='';board=[...initial];render()}
+function key(){return `lightsOutBest:${diff.value}`}
+function saveBest(m,s){const old=JSON.parse(localStorage.getItem(key())||'null');if(!old||m<old.moves||(m===old.moves&&s<old.sec)){localStorage.setItem(key(),JSON.stringify({moves:m,sec:s}));msg.textContent+='　★ベスト更新！'}showBest()}
+function showBest(){const b=JSON.parse(localStorage.getItem(key())||'null');bestEl.textContent=b?`ベスト：${b.moves}手・${formatTime(b.sec)}`:'ベスト：まだありません'}
+document.getElementById('newBtn').onclick=makePuzzle;document.getElementById('resetBtn').onclick=reset;document.getElementById('hintBtn').onclick=()=>{msg.textContent='押したマス＋上下左右が反転。すべて暗くすればクリア！'};diff.onchange=makePuzzle;
+makePuzzle();
+</script></body></html>
