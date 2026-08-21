@@ -1,0 +1,23 @@
+name: Sync work hours card
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_work_hours_card.py'
+      - '.github/workflows/sync-work-hours.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/sync_work_hours_card.py
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git commit -m '勤務時間・残業計算をホームに追加'
+          git push
