@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>騒音レベルメーター｜ゆーすけ無料アプリ集</title>
+<meta name="description" content="スマホのマイクで周囲の音量をリアルタイム表示する簡易騒音レベルメーター。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.13);--accent:#176b4d;--warn:#d6923b;--danger:#b94a48}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:linear-gradient(180deg,#f5f3ed,#eeebe3);color:var(--text);min-height:100vh}
+.wrap{max-width:720px;margin:auto;padding:18px 16px 48px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.back{color:var(--accent);text-decoration:none;font-weight:800}.badge{font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 14px 36px rgba(23,33,29,.08);margin-bottom:14px}h1{font-size:28px;margin:4px 0 8px}.lead{color:var(--muted);line-height:1.75;margin:0}
+.meter{text-align:center;padding:28px 10px}.num{font-size:64px;font-weight:900;line-height:1}.unit{font-size:14px;color:var(--muted);margin-top:6px}.bar{height:18px;background:#e8e5dd;border-radius:999px;overflow:hidden;margin:22px 0 10px}.fill{height:100%;width:0%;background:linear-gradient(90deg,#176b4d,#d6923b,#b94a48);transition:width .08s linear}.status{font-weight:800;font-size:18px}.sub{font-size:13px;color:var(--muted);line-height:1.6}
+button{width:100%;min-height:52px;border:0;border-radius:14px;background:var(--accent);color:white;font-size:16px;font-weight:900;padding:12px 16px}.secondary{background:white;color:var(--text);border:1px solid var(--line);margin-top:10px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{padding:14px 8px;border:1px solid var(--line);border-radius:14px;text-align:center;background:white}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted);line-height:1.7}label{font-size:13px;font-weight:800}.rangeRow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:10px}input[type=range]{width:100%}.offset{min-width:58px;text-align:right;font-weight:800}
+@media(max-width:480px){h1{font-size:24px}.num{font-size:58px}.card{padding:17px}.stats{gap:7px}.stat b{font-size:19px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><a class="back" href="../../">← ホームへ</a><span class="badge">暮らし・センサー</span></div>
+<section class="card"><h1>騒音レベルメーター</h1><p class="lead">スマホのマイクで、周囲の音量の変化をリアルタイム確認。静かな場所・会話・家電音などの比較に使えます。</p></section>
+<section class="card meter">
+<div id="db" class="num">--</div><div class="unit">推定 dB（簡易値）</div>
+<div class="bar"><div id="fill" class="fill"></div></div><div id="status" class="status">測定を開始してください</div><div id="level" class="sub">音量レベル: -- / 100</div>
+<div class="stats"><div class="stat"><b id="min">--</b><span>最小 dB</span></div><div class="stat"><b id="avg">--</b><span>平均 dB</span></div><div class="stat"><b id="max">--</b><span>最大 dB</span></div></div>
+</section>
+<section class="card"><button id="start">マイクを許可して測定開始</button><button id="stop" class="secondary" disabled>測定停止</button><button id="reset" class="secondary">記録をリセット</button></section>
+<section class="card"><label for="offset">補正値（目安）</label><div class="rangeRow"><input id="offset" type="range" min="-20" max="20" value="0" step="1"><span id="offsetVal" class="offset">0 dB</span></div><p class="note">端末ごとにマイク感度が違うため、既知の騒音計と合わせたい場合だけ補正してください。</p></section>
+<section class="card"><p class="note"><b>注意：</b>これはスマホのマイク入力から算出する簡易メーターです。端末やブラウザによって値が変わるため、法令・労働安全・騒音測定など正確な測定用途には専用の騒音計を使用してください。音声は録音・保存・送信しません。</p></section>
+</main>
+<script>
+let ctx,analyser,stream,raf,running=false,values=[];const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+function classify(db){if(db<35)return'かなり静か';if(db<50)return'静か';if(db<65)return'会話程度';if(db<80)return'やや大きい';if(db<95)return'大きい音';return'非常に大きい音';}
+function renderStats(){if(!values.length){$('min').textContent=$('avg').textContent=$('max').textContent='--';return}const mn=Math.min(...values),mx=Math.max(...values),av=values.reduce((a,b)=>a+b,0)/values.length;$('min').textContent=mn.toFixed(0);$('avg').textContent=av.toFixed(0);$('max').textContent=mx.toFixed(0);}
+function tick(){if(!running)return;const data=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(data);let sum=0;for(const v of data)sum+=v*v;const rms=Math.sqrt(sum/data.length);const level=clamp(Math.round((20*Math.log10(Math.max(rms,1e-7))+60)*1.7),0,100);const offset=Number($('offset').value);const db=clamp(30+level*.7+offset,20,120);$('db').textContent=db.toFixed(0);$('fill').style.width=level+'%';$('status').textContent=classify(db);$('level').textContent='音量レベル: '+level+' / 100';values.push(db);if(values.length>1800)values.shift();renderStats();raf=requestAnimationFrame(tick);}
+$('start').onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});ctx=new (window.AudioContext||window.webkitAudioContext)();analyser=ctx.createAnalyser();analyser.fftSize=2048;ctx.createMediaStreamSource(stream).connect(analyser);running=true;$('start').disabled=true;$('stop').disabled=false;tick()}catch(e){$('status').textContent='マイクを利用できません';$('level').textContent='ブラウザのマイク権限を確認してください';}};
+$('stop').onclick=()=>{running=false;cancelAnimationFrame(raf);if(stream)stream.getTracks().forEach(t=>t.stop());if(ctx)ctx.close();$('start').disabled=false;$('stop').disabled=true;$('status').textContent='測定を停止しました';};
+$('reset').onclick=()=>{values=[];renderStats();$('db').textContent='--';$('fill').style.width='0%';$('level').textContent='音量レベル: -- / 100';};
+$('offset').oninput=e=>{$('offsetVal').textContent=(e.target.value>0?'+':'')+e.target.value+' dB';localStorage.setItem('noiseOffset',e.target.value)};const saved=localStorage.getItem('noiseOffset');if(saved!==null){$('offset').value=saved;$('offsetVal').textContent=(saved>0?'+':'')+saved+' dB';}
+</script>
+</body></html>
