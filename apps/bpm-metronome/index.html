@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BPMタップ＆メトロノーム｜YUSUKE DIGITAL STUDIO</title>
+<meta name="description" content="曲に合わせてタップしてBPMを測定し、そのテンポでメトロノームを鳴らせる無料ブラウザツール。">
+<style>
+:root{--bg:#f5f3ed;--card:#fffefa;--text:#17211d;--muted:#68726c;--line:rgba(23,33,29,.14);--accent:#176b4d;--accent2:#e4b767;--danger:#a23b3b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:linear-gradient(180deg,var(--bg),#ece9df);color:var(--text);min-height:100vh}
+.wrap{max-width:720px;margin:auto;padding:18px 14px 42px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.back{color:var(--accent);text-decoration:none;font-weight:800}.badge{font-size:12px;padding:7px 10px;border-radius:999px;background:#e7eee9;color:var(--accent);font-weight:800}
+.hero,.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 12px 30px rgba(23,33,29,.07)}h1{font-size:clamp(28px,8vw,42px);margin:0 0 10px;font-family:Georgia,"Yu Mincho",serif}.lead{margin:0;color:var(--muted);line-height:1.75}.bpm{font:700 clamp(64px,18vw,108px)/1 Georgia,serif;text-align:center;margin:28px 0 4px;color:var(--accent)}.unit{text-align:center;color:var(--muted);font-weight:700;letter-spacing:.18em}
+.tap{width:100%;min-height:150px;margin-top:22px;border:0;border-radius:24px;background:var(--accent);color:#fff;font-size:28px;font-weight:900;box-shadow:0 9px 0 #0d4a34;touch-action:manipulation}.tap:active{transform:translateY(5px);box-shadow:0 4px 0 #0d4a34}.hint{text-align:center;color:var(--muted);font-size:13px;margin:15px 0 0}
+.panel{margin-top:16px}.row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}.num{font-size:34px;font-weight:900;text-align:center}.round{min-height:52px;border:1px solid var(--line);background:#fff;border-radius:16px;font-size:24px;font-weight:900;color:var(--accent)}.start{width:100%;min-height:58px;border:0;border-radius:16px;background:#17211d;color:#fff;font-size:18px;font-weight:900;margin-top:16px}.start.running{background:var(--danger)}
+.dots{display:flex;justify-content:center;gap:10px;margin:22px 0 6px}.dot{width:18px;height:18px;border-radius:50%;background:#d7ddd9;transition:.08s}.dot.on{background:var(--accent2);transform:scale(1.35)}.subgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.preset{min-height:44px;border:1px solid var(--line);border-radius:13px;background:#fff;font-weight:800;color:var(--text)}.mini{display:flex;gap:8px;margin-top:10px}.mini button{flex:1;min-height:44px;border:1px solid var(--line);border-radius:13px;background:#fff;font-weight:800}.note{font-size:12px;line-height:1.7;color:var(--muted);margin:16px 2px 0}
+@media(max-width:520px){.hero,.panel{padding:18px}.tap{min-height:138px}.subgrid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="back" href="../../">← ホームへ戻る</a><span class="badge">音楽・便利</span></div>
+  <section class="hero">
+    <h1>BPMタップ＆メトロノーム</h1>
+    <p class="lead">曲に合わせて数回タップするとテンポを測定。そのまま同じBPMでクリック音を鳴らせます。</p>
+    <div id="bpmDisplay" class="bpm">120</div><div class="unit">BPM</div>
+    <button id="tapBtn" class="tap" type="button">TAP</button>
+    <p id="tapInfo" class="hint">曲の拍に合わせて4回以上タップ</p>
+  </section>
+
+  <section class="panel" aria-label="メトロノーム">
+    <div class="row">
+      <button id="minus" class="round" type="button" aria-label="BPMを1下げる">−</button>
+      <div id="tempo" class="num">120</div>
+      <button id="plus" class="round" type="button" aria-label="BPMを1上げる">＋</button>
+    </div>
+    <div class="dots" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <button id="start" class="start" type="button">メトロノーム開始</button>
+    <div class="subgrid">
+      <button class="preset" data-bpm="60" type="button">60</button>
+      <button class="preset" data-bpm="90" type="button">90</button>
+      <button class="preset" data-bpm="120" type="button">120</button>
+      <button class="preset" data-bpm="140" type="button">140</button>
+      <button class="preset" data-bpm="160" type="button">160</button>
+      <button class="preset" data-bpm="180" type="button">180</button>
+    </div>
+    <div class="mini"><button id="half" type="button">½ BPM</button><button id="double" type="button">×2 BPM</button><button id="resetTap" type="button">タップ履歴クリア</button></div>
+    <p class="note">音は端末内のWeb Audioで生成します。最初の再生時にブラウザの仕様でタップ操作が必要です。BPM測定値は目安です。</p>
+  </section>
+</main>
+<script>
+(()=>{
+  const clamp=v=>Math.max(30,Math.min(240,Math.round(v)));
+  let bpm=clamp(Number(localStorage.getItem('bpmMetroTempo'))||120);
+  let taps=[]; let timer=null; let beat=0; let audio=null;
+  const $=id=>document.getElementById(id), dots=[...document.querySelectorAll('.dot')];
+  const render=()=>{ $('bpmDisplay').textContent=bpm; $('tempo').textContent=bpm; localStorage.setItem('bpmMetroTempo',bpm); };
+  const setBpm=v=>{ bpm=clamp(v); render(); if(timer){ stop(); start(); } };
+  function calcTap(){
+    const now=performance.now();
+    if(taps.length && now-taps[taps.length-1]>2200) taps=[];
+    taps.push(now); if(taps.length>9) taps.shift();
+    if(taps.length>=2){
+      const intervals=[]; for(let i=1;i<taps.length;i++) intervals.push(taps[i]-taps[i-1]);
+      const avg=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+      setBpm(60000/avg);
+      $('tapInfo').textContent=`${taps.length}回のタップから測定中`;
+    } else $('tapInfo').textContent='続けてタップしてください';
+  }
+  function click(){
+    if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=audio.createOscillator(), gain=audio.createGain();
+    osc.frequency.value=beat%4===0?1000:720; gain.gain.setValueAtTime(.18,audio.currentTime); gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.05);
+    osc.connect(gain); gain.connect(audio.destination); osc.start(); osc.stop(audio.currentTime+.055);
+    dots.forEach((d,i)=>d.classList.toggle('on',i===beat%4)); beat++;
+  }
+  function start(){
+    if(timer) return; click(); timer=setInterval(click,60000/bpm); $('start').textContent='停止'; $('start').classList.add('running');
+  }
+  function stop(){ clearInterval(timer); timer=null; dots.forEach(d=>d.classList.remove('on')); $('start').textContent='メトロノーム開始'; $('start').classList.remove('running'); }
+  $('tapBtn').addEventListener('pointerdown',e=>{e.preventDefault();calcTap()});
+  document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();calcTap()} });
+  $('minus').onclick=()=>setBpm(bpm-1); $('plus').onclick=()=>setBpm(bpm+1);
+  $('start').onclick=()=>timer?stop():start();
+  document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setBpm(Number(b.dataset.bpm)));
+  $('half').onclick=()=>setBpm(bpm/2); $('double').onclick=()=>setBpm(bpm*2);
+  $('resetTap').onclick=()=>{taps=[];$('tapInfo').textContent='曲の拍に合わせて4回以上タップ'};
+  render();
+})();
+</script>
+</body>
+</html>
