@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#173d30">
+  <title>QRつくる｜URL・文字をQRコードに</title>
+  <meta name="description" content="URLや文字、Wi-Fi情報をスマホですぐQRコードに変換。画像保存にも対応した無料ミニアプリ。">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root{--bg:#f4f1e8;--card:#fffefa;--ink:#17211d;--muted:#6d756f;--line:#d9ddd7;--green:#173d30;--gold:#d7ad62;--danger:#a23b3b}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#eef2ed 0,#f4f1e8 42%,#f4f1e8 100%);color:var(--ink);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;min-height:100vh}
+    .wrap{width:min(680px,100%);margin:auto;padding:18px 16px calc(34px + env(safe-area-inset-bottom))}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.home{color:var(--green);text-decoration:none;font-weight:800;font-size:14px}.tag{font-size:11px;letter-spacing:.12em;color:#8b6b34;font-weight:800}
+    .hero{padding:28px 22px;border-radius:24px;background:var(--green);color:white;box-shadow:0 18px 46px rgba(23,61,48,.18)}.hero h1{margin:6px 0 8px;font-size:clamp(28px,8vw,42px);line-height:1.15}.hero p{margin:0;color:rgba(255,255,255,.74);line-height:1.75;font-size:14px}
+    .card{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 10px 30px rgba(23,33,29,.06)}
+    .label{display:flex;justify-content:space-between;gap:8px;align-items:end;margin-bottom:8px}.label b{font-size:14px}.count{font-size:12px;color:var(--muted)}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.tab{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-weight:800}.tab.active{background:#e3ede8;border-color:#aac4b8;color:var(--green)}
+    textarea,input{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px;font:inherit;color:var(--ink);outline:none}textarea{min-height:128px;resize:vertical;line-height:1.6}textarea:focus,input:focus{border-color:#8bb3a1;box-shadow:0 0 0 3px rgba(23,107,77,.1)}
+    .wifi{display:none;gap:10px}.wifi.show{display:grid}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wifi label{font-size:12px;color:var(--muted);font-weight:700}.wifi label input{margin-top:6px}.check{display:flex!important;align-items:center;gap:9px;color:var(--ink)!important}.check input{width:20px;height:20px;margin:0}
+    .primary{width:100%;min-height:54px;margin-top:14px;border:0;border-radius:15px;background:var(--green);color:white;font:800 16px inherit;box-shadow:0 8px 18px rgba(23,61,48,.2)}button:active{transform:translateY(1px)}
+    .result{display:none;text-align:center}.result.show{display:block}.qrbox{width:290px;max-width:100%;aspect-ratio:1;margin:4px auto 16px;padding:16px;border:1px solid var(--line);border-radius:20px;background:white;display:grid;place-items:center}.qrbox img,.qrbox canvas{max-width:100%;height:auto!important}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{min-height:48px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--green);font:800 14px inherit}.status{min-height:22px;margin:10px 0 0;color:var(--muted);font-size:12px}.note{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.7}.error{color:var(--danger)}
+    @media(max-width:520px){.wrap{padding-left:12px;padding-right:12px}.hero{padding:24px 18px}.card{padding:15px}.row2,.actions{grid-template-columns:1fr}.qrbox{width:260px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><a class="home" href="../../">← ホームへ</a><span class="tag">YUSUKE DIGITAL STUDIO</span></div>
+    <section class="hero"><div class="tag">QUICK QR MAKER</div><h1>QRつくる</h1><p>URL・文字・Wi-Fi情報を、その場でQRコードに。入力内容は送信せず、ブラウザ内で生成します。</p></section>
+
+    <section class="card" aria-label="QRコード作成フォーム">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-mode="text" type="button">文字</button>
+        <button class="tab" data-mode="url" type="button">URL</button>
+        <button class="tab" data-mode="wifi" type="button">Wi-Fi</button>
+      </div>
+      <div id="plainFields">
+        <div class="label"><b id="inputLabel">QRにする内容</b><span class="count"><span id="count">0</span>/500</span></div>
+        <textarea id="text" maxlength="500" placeholder="文章やメモを入力"></textarea>
+      </div>
+      <div class="wifi" id="wifiFields">
+        <label>Wi-Fi名（SSID）<input id="ssid" maxlength="80" autocomplete="off" placeholder="例：HomeWiFi"></label>
+        <label>パスワード<input id="password" maxlength="100" autocomplete="off" placeholder="Wi-Fiのパスワード"></label>
+        <div class="row2">
+          <label>暗号化方式<select id="security" style="width:100%;margin-top:6px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px;font:inherit"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">なし</option></select></label>
+          <label class="check"><input id="hidden" type="checkbox">非公開SSID</label>
+        </div>
+      </div>
+      <button class="primary" id="generate" type="button">QRコードを作る</button>
+      <p class="status" id="formStatus" aria-live="polite"></p>
+    </section>
+
+    <section class="card result" id="result" aria-label="作成したQRコード">
+      <div class="qrbox" id="qrcode"></div>
+      <div class="actions"><button class="secondary" id="download" type="button">画像で保存</button><button class="secondary" id="copy" type="button">内容をコピー</button></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </section>
+    <p class="note">※ QRコードを第三者へ共有する前に、パスワードや個人情報が含まれていないか確認してください。生成処理には QRCode.js 1.0.0 を利用しています。</p>
+  </main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const tabs = [...document.querySelectorAll('.tab')];
+  let mode = 'text'; let lastValue = '';
+  const escapeWifi = v => v.replace(/([\\;,:"])/g, '\\$1');
+
+  function setMode(next){
+    mode = next;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    const wifi = mode === 'wifi';
+    $('plainFields').style.display = wifi ? 'none' : 'block';
+    $('wifiFields').classList.toggle('show', wifi);
+    $('inputLabel').textContent = mode === 'url' ? 'URL' : 'QRにする内容';
+    $('text').placeholder = mode === 'url' ? 'https://example.com' : '文章やメモを入力';
+    $('formStatus').textContent = '';
+  }
+  tabs.forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
+  $('text').addEventListener('input', () => $('count').textContent = $('text').value.length);
+
+  function buildValue(){
+    if(mode === 'wifi'){
+      const ssid = $('ssid').value.trim();
+      if(!ssid) throw new Error('Wi-Fi名を入力してください。');
+      const sec = $('security').value;
+      const pass = $('password').value;
+      if(sec !== 'nopass' && !pass) throw new Error('パスワードを入力してください。');
+      return `WIFI:T:${sec};S:${escapeWifi(ssid)};P:${escapeWifi(pass)};H:${$('hidden').checked ? 'true' : 'false'};;`;
+    }
+    let value = $('text').value.trim();
+    if(!value) throw new Error(mode === 'url' ? 'URLを入力してください。' : '内容を入力してください。');
+    if(mode === 'url' && !/^https?:\/\//i.test(value)) value = 'https://' + value;
+    return value;
+  }
+
+  $('generate').addEventListener('click', () => {
+    $('formStatus').className = 'status';
+    try{
+      if(typeof QRCode === 'undefined') throw new Error('QR作成ライブラリを読み込めませんでした。通信状態を確認してください。');
+      lastValue = buildValue();
+      $('qrcode').innerHTML = '';
+      new QRCode($('qrcode'), {text:lastValue,width:256,height:256,colorDark:'#111111',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+      $('result').classList.add('show');
+      $('formStatus').textContent = 'QRコードを作成しました。';
+      $('status').textContent = '';
+      setTimeout(() => $('result').scrollIntoView({behavior:'smooth',block:'start'}), 60);
+    }catch(err){ $('formStatus').textContent = err.message; $('formStatus').className = 'status error'; }
+  });
+
+  $('copy').addEventListener('click', async () => {
+    if(!lastValue) return;
+    try{ await navigator.clipboard.writeText(lastValue); $('status').textContent = '内容をコピーしました。'; }
+    catch{ $('status').textContent = 'コピーできませんでした。'; }
+  });
+
+  $('download').addEventListener('click', () => {
+    const canvas = $('qrcode').querySelector('canvas');
+    const img = $('qrcode').querySelector('img');
+    const url = canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
+    if(!url){ $('status').textContent = '画像を準備できませんでした。'; return; }
+    const a = document.createElement('a'); a.href = url; a.download = 'qr-code.png'; document.body.appendChild(a); a.click(); a.remove();
+    $('status').textContent = 'QR画像を保存しました。';
+  });
+})();
+</script>
+</body>
+</html>
